@@ -74,7 +74,7 @@
 * [💰 Monetization](monetization/README.md)
   * [StoreKit và Subscription](monetization/storekit.md)
   * [Ads, Analytics và Attribution](monetization/ads-analytics.md)
-* [🛠 Testing, Performance và Release](production/README.md)
+* [🛠️ Testing, Performance và Release](production/README.md)
   * [Unit Test và UI Test](production/testing.md)
   * [Instruments và Production Debugging](production/performance.md)
   * [Dependency, CI/CD và App Store](production/release.md)
