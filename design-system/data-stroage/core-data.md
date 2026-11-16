@@ -121,3 +121,7 @@ Predicate parameterized tránh format injection; DTO String trả qua queue boun
 **Q: Batch delete không cập nhật UI?** Nó thao tác store, context có object cũ; merge object IDs hoặc refresh/reset phù hợp.
 
 **Bài tập:** Tạo Place model, import background 100 records, fetch sorted/search, test in-memory và migration từ model v1.
+
+### SwiftData và Core Data
+
+SwiftData (iOS 17+) là lựa chọn Swift-native persistence với @Model, ModelContainer, ModelContext và @Query. Core Data vẫn phù hợp app hỗ trợ OS cũ hoặc cần API/tooling hiện có. Xem [SwiftData](swift-data.md) để so sánh CRUD, UIKit/SwiftUI, ModelActor và migration; không migrate production store khi chưa kiểm tra schema/dữ liệu thực tế.

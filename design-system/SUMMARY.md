@@ -57,6 +57,7 @@
   * [SnapKit, Kingfisher và UI Performance](ui-+-autolayout/snapkit-image-performance.md)
 * [🚌 Data Stroage](data-stroage/README.md)
   * [Core Data](data-stroage/core-data.md)
+  * [SwiftData](data-stroage/swift-data.md)
   * [Realm](data-stroage/realm.md)
   * [Keychain Access](data-stroage/keychain-access.md)
   * [FileManager, UserDefaults và App Groups](data-stroage/file-cache.md)

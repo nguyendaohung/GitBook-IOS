@@ -57,6 +57,7 @@ description: Some features which are usually asked in the interview
 * [Data Stroage](data-stroage/)
   * [Realm](data-stroage/realm.md)
   * [CoreData](data-stroage/core-data.md)
+  * [SwiftData](data-stroage/swift-data.md)
   * [Keychain Access](data-stroage/keychain-access.md)
 * [RxSwift + MVVM](rxswift-+-mvvm-+-clean-architure.md)
 * [Combine](combine.md)
