@@ -299,3 +299,8 @@ observe(on: MainScheduler.instance) không tự làm mọi @MainActor compiler c
 ### Tham khảo
 
 [RxSwift ObservableType](https://docs.rxswift.org/protocols/observabletype) · [RxSwift SubjectLifetimeScope](https://docs.rxswift.org/enums/subjectlifetimescope) · [Ví dụ thực tế và RxTest](practical-patterns.md)
+
+### Đọc tiếp
+
+* [Advanced Operators](operators-advanced.md): edge cases, batching, groupBy, amb, custom operators, async/await bridge.
+* [Traits và Subjects](traits-subjects-relays.md): chọn Single/Maybe/Completable/Driver/Signal, conversion và binding.
