@@ -181,6 +181,9 @@ Dùng TestScheduler tạo hot query events và cold fake response, inject schedu
 
 * [Creation, Transformation, Filtering và Time](operators-foundation.md): input/output, timeline, code, use case và lỗi thường gặp.
 * [Flattening, Combining, Error và Sharing](operators-composition.md): chọn flatMap/flatMapLatest/concatMap/flatMapFirst, zip/combineLatest/withLatestFrom, retry/catch và scheduler.
+* [Traits, Subjects, Relays và RxCocoa](traits-subjects-relays.md): Single, Maybe, Completable, Infallible, Driver, Signal, ControlProperty, ControlEvent, Binder và conversion.
+* [Higher-order Functions](higher-order-functions.md): Swift Sequence/Optional vs Observable, map/flatMap/compactMap, reduce/scan, lazy, DTO mapping.
+* [Advanced Operators](operators-advanced.md): groupBy, amb, buffer/window/sample, custom operators, resource lifetime và async bridge.
 * [RxSwift thực tế, MVVM và RxTest](practical-patterns.md): search, login, pagination, API state, UIKit binding và virtual-time tests.
 
 ### Q\&A tổng hợp

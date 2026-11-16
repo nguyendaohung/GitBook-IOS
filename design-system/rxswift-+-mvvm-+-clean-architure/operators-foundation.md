@@ -255,3 +255,9 @@ Search dùng debounce để giảm request. Button throttle chỉ giới hạn t
 ### Tham khảo
 
 [RxSwift ObservableType API](https://docs.rxswift.org/protocols/observabletype) · [ReactiveX operators](https://reactivex.io/documentation/operators.html) · [Flattening, Combining và Error Handling](operators-composition.md)
+
+### Đọc tiếp
+
+* [Higher-order Functions trong Swift và RxSwift](higher-order-functions.md): đối chiếu Array/Optional/Observable, map/flatMap/compactMap, reduce/scan.
+* [Advanced Operators](operators-advanced.md): groupBy, amb, takeLast, custom operators, resource lifetime.
+* [Traits](traits-subjects-relays.md): first(), take(1), single() và asSingle() khác kiểu kết quả/contract.

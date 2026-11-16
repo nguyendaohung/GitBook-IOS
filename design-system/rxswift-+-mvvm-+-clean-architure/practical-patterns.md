@@ -413,3 +413,9 @@ Test share bằng cold source + hai observers subscribe overlap, assert upstream
 ### Tham khảo
 
 [RxSwift](https://github.com/ReactiveX/RxSwift) · [RxTest API](https://docs.rxswift.org/) · [Creation/Transformation/Filtering](operators-foundation.md) · [Composition/Error/Sharing](operators-composition.md)
+
+### Đọc tiếp
+
+* [Traits, Subjects, Relays và RxCocoa](traits-subjects-relays.md): ví dụ Single API, Maybe cache, Completable save, Driver/Signal UI binding và lifecycle.
+* [Higher-order Functions](higher-order-functions.md): DTO mapping thuần Swift và Rx.
+* [Advanced Operators](operators-advanced.md): thêm RxTest edge cases, groupBy, batching, custom operator.
