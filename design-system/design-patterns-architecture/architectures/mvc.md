@@ -21,5 +21,38 @@
 
 #### Nhược điểm
 
-* Controller nhận quá nhiều trách nhiệm, dẫn đến phình to controller. Hầu như mọi thứ trong app đều được xử lý ở controller ⇒ Chỉ sử dụng trong dự án vừa và nhỏ.
+* Controller nhận quá nhiều trách nhiệm, dẫn đến phình to controller. Hầu như mọi thứ trong app đều được xử lý ở controller ⇒ Cần tách responsibility; MVC không giới hạn dự án nhỏ.
 * Khó kiểm thử. Vì View và Controller trong iOS dính quá chặt với nhau. Nguyên nhân: Controller (UIViewController) quản lý life cycle của View.
+
+## MVC thực tế
+
+```swift
+import UIKit
+
+struct Item { let title: String }
+final class ItemsController: UITableViewController {
+    private var items = [Item(title: "Coffee")]
+
+    override func tableView(_ tableView: UITableView,
+                            numberOfRowsInSection section: Int) -> Int {
+        items.count
+    }
+
+    override func tableView(_ tableView: UITableView,
+                            cellForRowAt indexPath: IndexPath) -> UITableViewCell {
+        let cell = UITableViewCell(style: .default, reuseIdentifier: nil)
+        cell.textLabel?.text = items[indexPath.row].title
+        return cell
+    }
+}
+```
+
+Ví dụ tối giản để thấy controller kết nối Model và View; production register/dequeue cell, repository fetch, state loading/error, cancellation. MVC không buộc controller chứa network/business logic; tách service/domain, child VC, data source, coordinator để tránh massive VC. Dùng MVC cho feature đơn giản hoặc app lớn có boundary rõ, không giới hạn project nhỏ.
+
+**Q: Massive ViewController là gì?** VC làm quá nhiều network/business/layout/navigation; tách responsibilities và dependency.
+
+**Q: MVC có test được?** Domain/service thuần test dễ, controller phụ thuộc UI test phức tạp hơn; inject dependencies.
+
+**Q: MVC vs MVP?** MVP presenter điều phối passive view qua protocol, tách presentation logic khỏi VC.
+
+**Q: MVC vs MVVM?** MVVM expose UI state/binding; MVC controller tự điều phối update. Chọn theo complexity/testability.

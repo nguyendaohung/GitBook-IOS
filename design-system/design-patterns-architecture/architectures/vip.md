@@ -52,3 +52,11 @@ Ví dụ cần Foundation; VC conform ProfileDisplay, inject interactor/presente
 **Q: VIP vs VIPER?** VIP tập trung unidirectional scene cycle; VIPER có View/Interactor/Presenter/Entity/Router, Presenter điều phối View và Interactor theo module.
 
 **Bài tập:** Scene load profile success/error, test Interactor bằng fake worker và Presenter format.
+
+## Câu hỏi phỏng vấn tình huống
+
+**Q: Request, Response, ViewModel khác nhau?** Request input của scene, Response kết quả business, ViewModel format display; boundary giúp test và tránh UIKit dependency.
+
+**Q: Worker và Interactor khác gì?** Worker thao tác API/DB/service; Interactor điều phối use case/business, không format UI.
+
+**Q: VIP có tránh retain cycle tự động?** Không, Presenter weak view, Router/VC ownership rõ, cancel async task và observer.

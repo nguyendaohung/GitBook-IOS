@@ -112,3 +112,11 @@ Crash report cần đúng build/architecture/dSYM UUID để symbolicate. Xem ex
 **Q: App lag nhưng CPU thấp?** Có thể main blocked I/O/lock, GPU rendering hoặc scheduling; dùng trace/frame metrics.
 
 **Bài tập:** Gallery ảnh lớn đo peak memory trước/sau downsample; tạo retain cycle và sửa bằng Memory Graph; profile một API + JSON decode.
+
+## Câu hỏi phỏng vấn tình huống
+
+**Q: dSYM dùng sai build có symbolicate được?** Không đáng tin; match UUID/build/architecture, giữ archive/dSYM theo release, xem crashed thread.
+
+**Q: Memory Graph không thấy leak nhưng RAM tăng?** Cache/growth/spike hoặc retain không phải cycle; Allocations generation, VM tracking, profile workload và purge.
+
+**Q: 60Hz vs 120Hz frame budget?** Khoảng 16.7ms vs 8.3ms tổng frame; app chỉ một phần, main/GPU/layout cần đo, không assume FPS luôn cố định.

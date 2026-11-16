@@ -41,3 +41,38 @@ Nhắc đến **GCD** ta có 1 số khái niệm:
 ⇒ Sử dụng Operation Queue
 
 WARNING: Khi có nhiều luồng truy cập cũng xảy ra vấn để read write  tương tự như vấn đề của [singleton](../design-patterns-architecture/design-pattern/singleton.md)
+
+## GCD thực hành: QoS, barrier, cancellation
+
+```swift
+import Foundation
+
+final class Cache {
+    private let queue = DispatchQueue(label: "cache", attributes: .concurrent)
+    private var storage: [String: Data] = [:]
+
+    func read(_ key: String) -> Data? {
+        queue.sync { storage[key] }
+    }
+
+    func write(_ data: Data, key: String) {
+        queue.async(flags: .barrier) {
+            self.storage[key] = data
+        }
+    }
+}
+```
+
+Mọi access qua cùng custom concurrent queue. barrier exclusive chỉ trong queue này; không áp dụng global queue để bảo vệ arbitrary state. Write async trả trước commit; nếu caller cần completion, cung cấp callback/async API. Không gọi queue.sync từ block đang chạy trên cùng serial queue hoặc barrier gây deadlock. Swift 6 strict concurrency cần isolation/Sendable phù hợp; actor thường đơn giản hơn.
+
+DispatchWorkItem.cancel đánh dấu cancellation, work đang chạy phải check flag/cooperate. asyncAfter(deadline:) schedule delayed work, không đảm bảo chính xác khi system bận. QoS mô tả importance/latency/energy, không phải chỉ định thread; userInitiated cho user chờ, utility dài có progress, background maintenance. Không dùng QoS để thực hiện UIKit off main.
+
+**Q: Barrier hoạt động trên global concurrent queue?** Không dùng global để đảm bảo exclusive như custom concurrent queue.
+
+**Q: GCD cancel task đang chạy?** Cooperative; không forcibly kill block. URLSession task cần cancel riêng.
+
+**Q: Deadlock vs race?** Deadlock chờ vòng tròn không tiến triển; race phụ thuộc interleaving. Lock/queue sai có thể gây cả hai.
+
+**Q: GCD vs Actor?** GCD manual synchronization, Actor compiler isolation/structured concurrency integration, vẫn logical race qua await.
+
+**Bài tập:** Cache concurrent read/write, test state consistency; mô phỏng deadlock bằng lý thuyết, không chạy main.sync trên main.

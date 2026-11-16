@@ -122,3 +122,13 @@ Parse không đồng nghĩa authorize. Router chờ session/navigation ready, ba
 **Q: App foreground không thấy banner?** Kiểm tra willPresent, notification settings và OS focus.
 
 **Bài tập:** Schedule reminder, cancel theo ID, test foreground/cold launch route, payload thiếu field và permission denied.
+
+## Câu hỏi phỏng vấn tình huống
+
+**Q: APNs sandbox vs production token?** Token/environment/topic cần đúng signing/backend, token opaque có thể đổi; unlink khi logout và handle invalid token.
+
+**Q: Silent push có dùng làm guaranteed scheduler?** Không, delivery/execution best effort, throttle/system state; BGTaskScheduler cũng không đảm bảo thời điểm.
+
+**Q: Universal Link có bypass login không?** Không, validate route/host/path và auth/resource ownership; chờ navigation ready, idempotent tap.
+
+**Q: Notification Service Extension timeout?** Phải cung cấp fallback content, gọi contentHandler đúng contract, không network dài; mutable-content phù hợp.

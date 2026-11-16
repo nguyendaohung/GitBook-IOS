@@ -53,3 +53,11 @@ Post: NotificationCenter.default.post(name: .sessionDidChange, object: nil). Kh�
 **Q: Observer có tránh coupling hoàn toàn?** Không; phụ thuộc event schema/contract, khó debug event chain. Dùng typed state khi phù hợp.
 
 **Bài tập:** Post logout event, observer refresh UI, remove observer; so sánh với Combine subject.
+
+## Câu hỏi phỏng vấn tình huống
+
+**Q: NotificationCenter có replay event cũ?** Không mặc định. State cần source of truth/BehaviorRelay/current value; subscriber mới đọc current state.
+
+**Q: Observer cleanup vì sao?** Block observer/token hoặc subscription có thể giữ owner/work; remove/cancel theo lifetime, weak capture đúng ownership.
+
+**Q: NotificationCenter queue nil chạy ở đâu?** Thường đồng bộ trên posting thread; UI consumer chuyển MainActor/main queue, không assume main.

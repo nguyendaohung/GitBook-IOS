@@ -88,3 +88,11 @@ Bật App Groups ở hai target, cùng group identifier; data file atomically gh
 **Q: Completion bị gọi hai lần?** Vi phạm contract; thiết kế một đường hoàn tất duy nhất kể cả network error/timeout.
 
 **Bài tập:** Test classifier trusted/blocked/unknown, sender nil, Unicode, rule conflict; test extension disabled và snapshot corrupt trên device.
+
+## Câu hỏi phỏng vấn tình huống
+
+**Q: Message Filter vs Notification Service Extension?** IdentityLookup phân loại message đủ điều kiện; Notification Service sửa remote notification mutable-content, không đọc SMS.
+
+**Q: Network deferral có gửi SMS trực tiếp URLSession?** Không tự tùy ý; dùng system-mediated deferQueryRequestToNetwork theo domain/configuration contract, fallback khi fail.
+
+**Q: Rule spam false positive xử lý?** Trusted precedence, confidence threshold/none, test Unicode/language, privacy; không log message/phone.

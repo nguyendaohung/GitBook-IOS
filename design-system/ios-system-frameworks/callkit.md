@@ -125,3 +125,11 @@ Test device thật, enable/disable, country code, same number different format, 
 **Q: Vì sao incremental update nguy hiểm khi version lệch?** System đang giữ list version khác, diff có thể remove/add sai; full reset khi phù hợp.
 
 **Bài tập:** Tạo app + Call Directory target, App Group, fixture 3 số giả; reload và test lỗi duplicate. Không dùng số điện thoại cá nhân trong test fixture.
+
+## Câu hỏi phỏng vấn tình huống
+
+**Q: Call Directory extension có thể nhận incoming phone number từng call để gọi API?** Không với traditional directory; system match list. Live Caller ID Lookup khác cơ chế và requirements.
+
+**Q: Số local 090... chuyển thành Int64 thế nào?** Cần region/numbering plan normalize E.164, bỏ prefix quốc tế theo parser đáng tin, sort/dedup; không chỉ strip ký tự.
+
+**Q: Main app process còn sống mới extension chạy?** Không, extension process/lifetime riêng do system quản lý; shared container snapshot, không singleton in-memory.

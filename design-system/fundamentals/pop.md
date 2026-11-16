@@ -4,7 +4,7 @@ Link tham khảo :  [https://viblo.asia/p/gioi-thieu-protocol-oriented-programmi
 
 Protocol-Oriented Programming (POP) là một phong cách lập trình trong Swift mà nổi bật với việc ưu tiên sử dụng protocol để thể hiện các tính năng và chức năng của một đối tượng. Trong POP, chúng ta sử dụng protocol để xác định các chức năng của một đối tượng và việc sử dụng protocol như một "template" để tạo ra các đối tượng cụ thể.
 
-Bời vì POP được kế thừa từ OOP nên POP có rất nhiều ưu diểm vượt trội hơn OOP. Ngày nay, trong Swift, Mình thấy rất nhiều người ưa thích sử dụng Struct kết hợp Protocol (Thường được sử dụng trong POP) thay vì sử dụng class (OOP). Mọi thứ Class có thể làm, Struct cũng có thể. Struct dựa trên Value Type thay vì Reference Type như Class -> Chúng ta không cần phải lo nghĩ nhiều tới việc Memory Leak, deadlock (multithread), implicit sharing data...
+Bời vì POP được kế thừa từ OOP nên POP có rất nhiều ưu diểm vượt trội hơn OOP. Ngày nay, trong Swift, Mình thấy rất nhiều người ưa thích sử dụng Struct kết hợp Protocol (Thường được sử dụng trong POP) thay vì sử dụng class (OOP). Struct có nhiều khả năng tương tự class, nhưng không có class inheritance/reference identity. Struct dựa trên Value Type thay vì Reference Type như Class -> Chúng ta không cần phải lo nghĩ nhiều tới việc Memory Leak, deadlock (multithread), implicit sharing data...
 
 ### Ví dụ về POP <a href="#id-2-vi-du-ve-pop-1" id="id-2-vi-du-ve-pop-1"></a>
 
@@ -73,7 +73,7 @@ class Penguin:Bird {
 }
 ```
 
-Penguin là chim, nhưng nó không hề có lông và không thể bay&#x20;
+Penguin là chim có lông vũ nhưng không thể bay&#x20;
 
 Vậy giờ phải sửa thế nào? Trong OOP chúng ta sẽ làm cách sau:
 
@@ -147,3 +147,25 @@ Bây giờ bạn có thể thêm loài mới như Ostrich(Không thể bay nhưn
 ## 4. Kết luận <a href="#id-4-ket-luan-3" id="id-4-ket-luan-3"></a>
 
 Với ví dụ này, mình hi vọng bạn sẽ có cái nhìn tốt về Protocol-Oriented Programming. Hiển nhiên, POP chỉ là khái niệm, bạn có thể áp dụng nếu bạn muôn hoặc không nhất thiết phải dùng, tuỳ thuộc vào quyết định và vấn đề của bạn.
+
+## POP chuyên sâu và Q&A
+
+Protocol requirement mô tả contract; extension cung cấp default implementation. Method chỉ có trong extension (không phải requirement) được chọn theo static type trong nhiều tình huống, không có dynamic dispatch như requirement. Composition nhiều protocol nhỏ giúp tránh ép subtype hỗ trợ hành vi không có.
+
+```swift
+protocol Drawable { func draw() }
+extension Drawable { func draw() { print("Default") } }
+struct Circle: Drawable { func draw() { print("Circle") } }
+let item: any Drawable = Circle()
+item.draw() // Circle
+```
+
+**Q: Protocol extension vs inheritance?** Extension chia sẻ default behavior giữa conforming types; inheritance chia sẻ class identity/state, single superclass.
+
+**Q: Struct + protocol có tránh mọi race/leak?** Không. Struct chứa reference có thể share mutable state, closure giữ class, concurrent mutation vẫn race.
+
+**Q: Tại sao dùng associatedtype?** Biểu diễn quan hệ type trong contract; generic constraint giữ type relationship, existential có giới hạn.
+
+**Q: POP có thay thế OOP hoàn toàn?** Không; UIKit/identity/shared lifetime vẫn dùng class, protocol composition giảm coupling.
+
+**Bài tập:** Tạo Cache protocol với fake và disk implementation, test service không phụ thuộc concrete cache.

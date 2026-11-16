@@ -75,3 +75,11 @@ Dataverse security role/record access hoặc connector permission theo source, k
 **Q: Canvas vs Model-driven?** Canvas custom UI; Model-driven data/process-driven với Dataverse.
 
 **Bài tập:** Material gallery + search delegable, create/edit form, validation, test permission/duplicate/large dataset; viết sơ đồ data model và UAT cases.
+
+## Câu hỏi phỏng vấn tình huống
+
+**Q: Delegation có giống pagination không?** Delegation quyết định query chạy server hay local subset; pagination chỉ cách lấy từng page, cần delegable query/connector support.
+
+**Q: Hai user cùng update stock?** Server-side transaction/concurrency token/revision, validate quantity; client read-modify-write không đủ.
+
+**Q: Hidden button có đảm bảo security?** Không, data source/Dataverse roles/connector authorization mới enforce. UI visibility chỉ UX.

@@ -81,3 +81,11 @@ Chỉ dùng rename nếu schema v1 thật sự có name và v2 có title; test f
 **Q: Realm nhanh hơn Core Data?** Không mặc định. Benchmark workload, query/index, object graph, writes, migration, memory và dependency maintenance.
 
 **Bài tập:** CRUD favorites, observe thay đổi, migration v1→v2, test duplicate primary key và background query.
+
+## Câu hỏi phỏng vấn tình huống
+
+**Q: Realm Results là snapshot?** Live Results cập nhật theo Realm, map sang value array khi cần snapshot/cross-actor; giữ notification token đúng lifetime.
+
+**Q: Write transaction có mutate ngoài transaction?** Managed object cần write transaction, atomic commit; batch và error handling, tránh blocking main.
+
+**Q: Frozen object vs ThreadSafeReference?** Frozen read-only snapshot, ThreadSafeReference resolve một lần tại Realm đích; cân nhắc primary key/DTO đơn giản hơn.

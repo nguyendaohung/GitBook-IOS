@@ -112,3 +112,11 @@ Callback phải hoàn tất đúng một lần; continuation không tự cancel/
 **Q: async let và Task {} khác?** async let child task có structured scope; Task {} unstructured, owner phải quản lý handle/lifetime.
 
 **Bài tập:** So sánh sequential/parallel fetch, cancel khi query thay đổi, test stale result và error.
+
+## Câu hỏi phỏng vấn tình huống
+
+**Q: Task cancellation có tự hủy callback legacy?** Không. Cần cancellation handler và underlying handle, resume continuation đúng một lần.
+
+**Q: MainActor.run khác DispatchQueue.main.async?** MainActor.run execute synchronous closure trên main actor và await completion; GCD enqueue closure, không biểu diễn compiler isolation.
+
+**Q: async function gọi sync expensive work có block?** Có, async không tự offload CPU. Chọn executor/isolation, đo main thread.

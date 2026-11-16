@@ -165,3 +165,11 @@ Cursor ổn định hơn offset khi data thay đổi, nhưng backend quyết đ�
 **Q: SSL pinning có thay ATS không?** Không; thêm ràng buộc identity, cần rotation/backup và vẫn validate trust.
 
 **Bài tập:** Stub 200, 204, 401, 429, malformed JSON bằng URLProtocol; test mapping và retry count.
+
+## Câu hỏi phỏng vấn tình huống
+
+**Q: Background URLSession khác Task background?** System quản lý transfer phù hợp configuration, app có thể suspend; Task async không giữ process sống. Handle delegate/relaunch.
+
+**Q: Cache ETag/304 xử lý?** If-None-Match, server 304 reuse cached representation; URLCache theo HTTP semantics, repository offline state riêng.
+
+**Q: API timeout nhưng server đã tạo order?** Query status/idempotency key, không retry POST charge tùy ý. Client timeout không đồng nghĩa server rollback.

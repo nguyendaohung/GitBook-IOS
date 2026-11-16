@@ -85,3 +85,11 @@ App group ID phải đúng ở app và extension. Extension đọc snapshot đã
 **Q: Cache khác persistence?** Cache có thể tái tạo, mất không làm mất dữ liệu nghiệp vụ; persistence phải có migration/backup/consistency.
 
 **Bài tập:** Tạo image disk cache, TTL và size cap; test file mất/corrupt và concurrent read/write.
+
+## Câu hỏi phỏng vấn tình huống
+
+**Q: Atomic write có đảm bảo nhiều writers không conflict?** Không, tránh partial file read; serialize writer/version/coordination cho multi-process/multi-file consistency.
+
+**Q: Documents vs Application Support vs Caches?** Documents user data, Application Support app persistent data, Caches tái tạo có thể purge; chọn backup/protection theo purpose.
+
+**Q: Cache stampede là gì?** Nhiều misses cùng key tạo duplicate network; single-flight/in-flight sharing và bounded cache, không giữ secret lâu.

@@ -46,3 +46,15 @@ Trong Swift, để parse dữ liệu JSON, chúng ta có thể sử dụng các 
 * [URLSession, Alamofire, Moya](api-client.md)
 * [Network Framework và VPN](network-vpn.md)
 * [Speed Test](speed-test.md)
+
+## Q&A tổng quan Networking
+
+**Q: URLSession có cần background queue để gọi API?** Không bắt buộc; async/callback không block khi chờ network, CPU-heavy parsing cần executor phù hợp, UI MainActor.
+
+**Q: Transport error vs HTTP error?** Network/TLS/timeout là transport; HTTP status 4xx/5xx vẫn có response, cần validate; business/decode errors riêng.
+
+**Q: Codable vs SwiftyJSON?** Codable type-safe schema, SwiftyJSON thuận tiện dynamic JSON; validate data và mapping DTO-domain.
+
+**Q: Khi nào chọn Moya/Alamofire?** Alamofire request/interceptor, Moya typed endpoint/provider/stub; URLSession native đủ nhiều use cases.
+
+**Q: API retry và cache thế nào?** Bounded retry theo idempotency/error, URLCache HTTP semantics và local cache nghiệp vụ, không cache token/PII tùy ý.

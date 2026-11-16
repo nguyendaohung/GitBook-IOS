@@ -15,3 +15,11 @@ All features :
   * [VIP](architectures/vip.md)
   * [VIPER](architectures/viper.md)
 * [Dependency Injection (DI)](dependency-injection.md)
+
+## Câu hỏi phỏng vấn tổng quan
+
+**Q: Design pattern vs architecture?** Architecture tổ chức boundary/layer, pattern giải quyết vấn đề thiết kế; phối hợp MVVM, DI, Repository, Observer/Strategy.
+
+**Q: Chọn MVC/MVP/MVVM thế nào?** Theo complexity, codebase, testability và team; không có architecture luôn tối ưu.
+
+**Q: DIP và DI liên hệ?** DIP dependency hướng abstraction; DI cung cấp implementation từ composition root.

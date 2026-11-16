@@ -13,3 +13,55 @@ Bạn có thể tạo các ô trong table view bằng cách sử dụng lớp UI
 
 nếu muốn download 1000 ảnh dưới background thread thì xử lý ntn => Xử dụng operation queue để giới hạn số ảnh download 1 lần để hiện ra sớm cho user. =>Tối ưu UX, Hoặc dùng Dispatch Semaphore&#x20;
 
+## Cell reuse thực tế: async image và stable ID
+
+```swift
+import UIKit
+
+final class ProductCell: UITableViewCell {
+    private var representedID: String?
+    private var imageTask: Task<Void, Never>?
+
+    func configure(id: String, title: String, imageURL: URL) {
+        representedID = id
+        imageTask?.cancel()
+        var content = defaultContentConfiguration()
+        content.text = title
+        content.image = UIImage(systemName: "photo")
+        contentConfiguration = content
+
+        imageTask = Task { [weak self] in
+            guard let (data, response) = try? await URLSession.shared.data(from: imageURL),
+                  let http = response as? HTTPURLResponse,
+                  (200..<300).contains(http.statusCode),
+                  !Task.isCancelled, self?.representedID == id else { return }
+            // Demo nhỏ; production downsample/cache off main.
+            guard let image = UIImage(data: data), let self else { return }
+            var content = self.defaultContentConfiguration()
+            content.text = title
+            content.image = image
+            self.contentConfiguration = content
+        }
+    }
+
+    override func prepareForReuse() {
+        super.prepareForReuse()
+        representedID = nil
+        imageTask?.cancel()
+        imageTask = nil
+        contentConfiguration = nil
+    }
+}
+```
+
+Register/dequeue theo reuseIdentifier, configure đầy đủ mọi state (text, image, selected, hidden). Cell không tương đương record; async callback phải verify stable ID, cancel cũ. prepareForReuse không gọi khi reconfigureItems của diffable data source, nên configure tự reset. Prefetch có thể chạy trước visible; không giả định số cells cố định. Giới hạn concurrent transfer bằng TaskGroup/OperationQueue đúng async operation lifecycle, không block main bằng semaphore.
+
+**Q: Tại sao cell hiện ảnh sai?** Callback request cũ sau reuse; cancel, reset placeholder, verify representedID.
+
+**Q: reloadData vs diffable snapshot?** reloadData refresh rộng; diffable dựa stable unique IDs, apply/reconfigure phù hợp, không tự sửa model.
+
+**Q: Prefetch có cần cancel?** Có khi item không còn cần; shared request cần ownership/ref count để không hủy của cell khác.
+
+**Q: prepareForReuse nên reset gì?** Transient state/callback/request; configure đầy đủ content mỗi lần.
+
+**Bài tập:** List 200 ảnh, scroll nhanh, test reorder và async response cũ; profile memory/downsample.

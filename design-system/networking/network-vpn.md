@@ -152,3 +152,11 @@ Test permission cancel, config invalid, server unreachable, Wi-Fi→cellular, ai
 **Q: HTTPS có cần khi dùng VPN?** Có. VPN bảo vệ segment tới tunnel endpoint; HTTPS bảo vệ traffic ứng dụng tới origin.
 
 **Bài tập:** Tạo fake VPN state reducer, test duplicate tap, permission denial, timeout, handover và reconnect.
+
+## Câu hỏi phỏng vấn tình huống
+
+**Q: VPN connected nhưng API timeout?** Kiểm tra actual request, DNS/routes/MTU/TLS/server, path/NEVPNStatus không đảm bảo endpoint reachable.
+
+**Q: Packet Tunnel provider startTunnel completion success lúc nào?** Sau khi engine/settings/tunnel thật sự sẵn sàng theo contract; skeleton không thay VPN engine.
+
+**Q: TCP vs UDP framing?** TCP byte stream cần framing/length prefix, UDP datagram giữ boundary nhưng có loss/reorder; protocol VPN quyết định.

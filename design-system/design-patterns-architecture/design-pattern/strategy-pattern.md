@@ -52,3 +52,11 @@ Fit giữ aspect ratio; Stretch thay đổi ratio. Validate size > 0 trước ca
 **Q: Strategy vs State?** Strategy là thuật toán thay thế; State phản ánh lifecycle và transition nội bộ.
 
 **Bài tập:** Tạo retry strategies exponential backoff/no retry, test chọn theo HTTP method/status.
+
+## Câu hỏi phỏng vấn tình huống
+
+**Q: Khi nào Strategy tốt hơn switch?** Nhiều thuật toán thay đổi độc lập, cần test/extension; switch nhỏ exhaustive enum có thể đơn giản hơn.
+
+**Q: Strategy có state không?** Có thể, nhưng contract rõ và ownership/thread safety đúng; immutable strategy dễ reuse.
+
+**Q: Ví dụ retry policy?** Strategy chọn retry/backoff theo method/status/idempotency, API client inject policy, test 401/429/5xx.

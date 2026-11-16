@@ -486,3 +486,15 @@ makeUIView tạo view, updateUIView đồng bộ khi state đổi; Coordinator c
 * [UIKit - Apple](https://developer.apple.com/documentation/uikit)
 * [Observation - Apple](https://developer.apple.com/documentation/observation)
 * [SwiftUI - FX Studio](https://fxstudio.dev/category/code/swiftui/page/6/)
+
+## Câu hỏi phỏng vấn tình huống
+
+**Q: Modifier .padding trước .background khác sau?** Modifier wrap view theo thứ tự, background sau padding phủ cả padded area; background trước padding chỉ phủ content.
+
+**Q: NavigationStack path chứa gì?** Stable Hashable route values/IDs, không giữ VC hoặc mutable managed model; navigationDestination map route, deep link validate/auth.
+
+**Q: UIKit representable updateUIView có gọi nhiều lần?** Có, sync state idempotently, không set Binding vô điều kiện gây feedback loop; coordinator refresh parent binding, cleanup observer.
+
+**Q: SwiftUI dùng UIKit delegate như nào?** UIViewRepresentable/UIViewControllerRepresentable, Coordinator chuyển delegate events sang Binding/closure, UI lifecycle theo framework.
+
+**Q: StateObject init nhận parameter thay đổi?** Model lifetime theo view identity, initial parameter mới không mặc định recreate; đổi identity có chủ đích hoặc inject owner model.

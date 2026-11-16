@@ -88,3 +88,13 @@ Check permission usage descriptions, app groups, VPN/CallKit/watch entitlements,
 **Q: Certificate vs profile?** Certificate xác định signing identity; profile cấp quyền cho app ID/team/entitlements/device theo loại.
 
 **Bài tập:** Tạo dev/staging schemes + xcconfig, CI test/archive pipeline, mô phỏng signing mismatch và checklist release.
+
+## Câu hỏi phỏng vấn tình huống
+
+**Q: Provisioning profile hết hạn/mismatch extension?** Kiểm tra Team/App ID/entitlements/certificate và profile từng target, rotate theo signing policy; không copy profile tùy ý.
+
+**Q: SwiftLint/R.Swift CI fail?** Pin tool/dependency version, đảm bảo config/generated resources/build plugin và target membership, run lint/build trên runner tương ứng.
+
+**Q: Production crash sau release có rollback binary ngay?** Không mặc định, pause phased rollout nếu phù hợp, feature flag/server rollback, hotfix và review; giữ data migration compatibility.
+
+**Q: Build number vs marketing version?** CFBundleVersion định danh build upload, CFBundleShortVersionString là release version user thấy; tăng build theo App Store requirements.

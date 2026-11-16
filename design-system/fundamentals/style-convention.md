@@ -201,3 +201,15 @@ class TestDatabase : Database {
 ```
 
 ⇒ Chú ý trước và sau dấu “:”
+
+## Q&A về code style và maintainability
+
+**Q: Tại sao chia protocol conformance theo extension?** Nhóm responsibility dễ đọc/review; không làm type đổi identity, tránh extension chỉ để che dependency phức tạp.
+
+**Q: Naming delegate thế nào?** First argument thường source, tên event mô tả intent, không lặp type không cần. Ví dụ tableView(_:didSelectRowAt:).
+
+**Q: SwiftLint có thay code review?** Không. Lint enforce convention/anti-pattern, review kiểm tra correctness, ownership, security, architecture, performance.
+
+**Q: Khi nào dùng // MARK:?** Nhóm lifecycle, setup, actions, delegate/data source; không dùng để che massive type, tách responsibility khi cần.
+
+**Q: Có nên force unwrap vì code ngắn?** Chỉ khi invariant được chứng minh rõ; ưu tiên guard/if let và error handling, không dùng try! cho production failure có thể xảy ra.

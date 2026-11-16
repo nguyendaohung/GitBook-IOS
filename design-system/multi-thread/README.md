@@ -10,3 +10,11 @@
 * [Async/Await](async-await.md)
 * [Question](../question-interview.md)
 * [Swift Concurrency](structured-concurrency.md)
+
+## Câu hỏi phỏng vấn tổng quan
+
+**Q: Sync/async vs serial/concurrent?** Sync/async nói caller chờ hay không; serial/concurrent nói scheduling/overlap. Async không đồng nghĩa background.
+
+**Q: GCD vs OperationQueue vs Swift Concurrency?** GCD queues; Operation dependency/state/cancel/limit; Swift Concurrency structured tasks, actor/Sendable.
+
+**Q: Data race vs deadlock?** Data race unsafe concurrent memory access; deadlock chờ vòng tròn. Isolation/lock đúng, tránh blocking main/cooperative executor.

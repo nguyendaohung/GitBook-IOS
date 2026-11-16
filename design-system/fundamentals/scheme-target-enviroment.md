@@ -40,3 +40,24 @@ Khi phát triển ứng dụng iOS, bạn sẽ cần làm việc với các Targ
     * Môi trường "Production" sử dụng URL máy chủ thực tế và cài đặt cho ứng dụng hoạt động trong môi trường thực tế.
 
     Bằng cách sử dụng các cài đặt môi trường khác nhau cho các Scheme, bạn có thể chuyển đổi giữa các môi trường một cách dễ dàng và quản lý cài đặt cho ứng dụng của bạn.
+
+## Build configuration và Q&A
+
+Target định nghĩa sản phẩm/sources/resources/signing. Scheme chọn Build/Run/Test/Profile/Analyze/Archive action, target và configuration. Destination chọn device/simulator. Development/Staging/Production thường map vào configurations + xcconfig; launch arguments/environment variables khi Run không phải secret store, không tự tồn tại trong App Store build.
+
+```text
+// Staging.xcconfig
+PRODUCT_BUNDLE_IDENTIFIER = com.example.app.staging
+API_HOST = staging.example.com
+SWIFT_ACTIVE_COMPILATION_CONDITIONS = $(inherited) STAGING
+```
+
+Info.plist có thể expand build settings. Không nhúng API secret/token vào binary. Extension/watch target có bundle ID/entitlements/signing riêng; target membership đúng. Shared scheme để CI dùng, version Xcode pinned.
+
+**Q: Scheme vs target?** Target sản phẩm cần build; scheme điều phối actions/target/configuration.
+
+**Q: Debug/Release vs staging/prod?** Debug/Release là build configuration; staging/prod là environment nghiệp vụ, có thể tạo StagingDebug/StagingRelease hoặc xcconfig phù hợp.
+
+**Q: Tại sao CI không thấy scheme?** Scheme chưa shared/commit hoặc sai workspace/project; kiểm tra xcodebuild -list.
+
+**Q: API key trong xcconfig có an toàn?** Không nếu nhúng binary; secret backend/CI, client dùng public config và short-lived credential.
