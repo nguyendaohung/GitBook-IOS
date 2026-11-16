@@ -14,3 +14,4 @@ Fundamental
 * [Frame vs Bound](frame-vs-bounds.md)
 * [Closure](clousure-escaping-va-non-escaping.md) (Escaping và Non-escaping)
 * [PassData](pass-data.md)
+* [Generics, Optional và Codable](generics-codable.md)

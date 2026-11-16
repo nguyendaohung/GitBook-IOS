@@ -12,9 +12,9 @@ Trong Swift, bạn có thể sử dụng từ khóa `async` để chỉ định 
 
 <figure><img src="../.gitbook/assets/Screen Shot 2023-02-22 at 11.13.30.png" alt=""><figcaption></figcaption></figure>
 
-Trong ví dụ này, chúng ta sử dụng hàm `URLSession.shared.data(from:completionHandler:)` để thực hiện yêu cầu mạng bất đồng bộ và sử dụng từ khóa `await` để đợi cho yêu cầu hoàn thành trước khi trả về kết quả.
+Trong ví dụ này, chúng ta sử dụng hàm `URLSession.shared.data(from:)` để thực hiện yêu cầu mạng bất đồng bộ và sử dụng từ khóa `await` để đợi cho yêu cầu hoàn thành trước khi trả về kết quả.
 
-2. **Xử lý các tác vụ nặng bất đồng bộ**: Khi thực hiện các tác vụ nặng như đọc và ghi tệp hoặc xử lý hình ảnh, việc thực hiện chúng trên luồng chính sẽ gây tắc nghẽn và làm giảm hiệu suất. Sử dụng Async/Await giúp đảm bảo rằng các tác vụ nặng được thực hiện trên luồng nền và không làm giảm hiệu suất của ứng dụng
+2. **Xử lý các tác vụ nặng bất đồng bộ**: Khi thực hiện các tác vụ nặng như đọc và ghi tệp hoặc xử lý hình ảnh, việc thực hiện chúng trên luồng chính sẽ gây tắc nghẽn và làm giảm hiệu suất. Async/Await cho phép suspend mà không block thread khi API hỗ trợ; không tự chuyển tác vụ CPU-bound ra background. Cần chọn isolation/executor phù hợp để không block main actor.
 
 <figure><img src="../.gitbook/assets/Screen Shot 2023-02-22 at 11.15.21.png" alt=""><figcaption></figcaption></figure>
 
@@ -31,3 +31,7 @@ Trong ví dụ này, chúng ta sử dụng các hàm `fetchDataTask1()`, `fetchD
 <figure><img src="../.gitbook/assets/Screen Shot 2023-02-22 at 11.18.26.png" alt=""><figcaption></figcaption></figure>
 
 Trong ví dụ này, chúng ta sử dụng các hàm `fetchDataTask1()`, `fetchDataTask2()` và `fetchDataTask3()` để thực hiện các tác vụ bất đồng bộ theo thứ tự. Chúng ta sử dụng từ khóa `await` để đợi cho mỗi tác vụ hoàn thành trước khi tiếp tục thực hiện tác vụ tiếp theo. Cuối cùng, chúng ta sử dụng hàm `processResults(_:_:_:)` để xử lý kết quả trả về từ các tác vụ.
+
+### Kiến thức mở rộng
+
+Xem [Swift Concurrency: Task, Actor, Sendable](structured-concurrency.md) để hiểu structured concurrency, cancellation và data-race safety. Dùng async let/TaskGroup để chạy child tasks đồng thời; await từng hàm theo thứ tự không tự tạo parallelism.
