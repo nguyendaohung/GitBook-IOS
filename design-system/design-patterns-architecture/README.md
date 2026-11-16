@@ -14,3 +14,4 @@ All features :
   * [MVVM](architectures/mvvm.md)
   * [VIP](architectures/vip.md)
   * [VIPER](architectures/viper.md)
+* [Dependency Injection (DI)](dependency-injection.md)

@@ -40,3 +40,9 @@ Trong Swift, để parse dữ liệu JSON, chúng ta có thể sử dụng các 
 * Sử dụng **SwiftyJSON**: đây là một thư viện Swift dễ sử dụng để parse và truy cập dữ liệu JSON. Ví dụ:
 
 <figure><img src="../.gitbook/assets/Screen Shot 2023-02-22 at 12.40.43.png" alt=""><figcaption></figcaption></figure>
+
+### Kiến thức mở rộng
+
+* [URLSession, Alamofire, Moya](api-client.md)
+* [Network Framework và VPN](network-vpn.md)
+* [Speed Test](speed-test.md)
