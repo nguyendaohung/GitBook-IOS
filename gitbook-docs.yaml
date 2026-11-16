@@ -1,0 +1,11 @@
+$schema: https://api.gitbook.com/gitbook-docs.yaml
+site:
+  title: Design System
+  structure:
+    - type: space
+      key: space-1
+      title: Design System
+      path: design-system
+      default: true
+      content:
+        directory: ./design-system
