@@ -116,3 +116,11 @@ deviceOwnerAuthentication cho phép passcode fallback; deviceOwnerAuthentication
 **Q: Keychain vs UserDefaults?** Keychain cho secret, UserDefaults cho setting; không thay thế DB/cache.
 
 **Bài tập:** Tạo token store protocol, in-memory fake, test login/read/logout và refresh race. Test device locked/Face ID denied trên thiết bị thật.
+
+## Câu hỏi phỏng vấn tình huống
+
+**Q: AfterFirstUnlock vs WhenUnlocked?** AfterFirstUnlock khả dụng sau unlock đầu tiên, phù hợp background cần secret; WhenUnlocked chỉ khi unlocked. Chọn least privilege.
+
+**Q: Face ID evaluatePolicy true có chứng minh backend login?** Không, local authentication; server validate token/session. Dùng access control bảo vệ Keychain item thật sự.
+
+**Q: Logout và refresh race xử lý?** Invalidate session generation, cancel in-flight refresh, revoke server và delete keychain; không để old token ghi lại.

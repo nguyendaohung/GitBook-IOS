@@ -79,3 +79,13 @@ Texture phù hợp feed cell phức tạp, layout/text/image preparation nặng.
 **Q: Node block capture indexPath có rủi ro gì?** Data snapshot đổi trước khi block chạy; capture immutable model/stable ID.
 
 **Bài tập:** Feed article bằng Texture và UICollectionView, đo scrolling/peak memory với cùng ảnh, ghi trade-off.
+
+## Câu hỏi phỏng vấn tình huống
+
+**Q: ASTableNode node block được gọi thread nào?** Có thể được thực thi ngoài main; capture immutable model, không truy cập UIKit/view/layer hoặc mutable indexPath state.
+
+**Q: ASLayoutSpec khác Auto Layout?** Layout spec composition theo size range/flexbox-like, hỗ trợ async measurement; Auto Layout constraint solver UIKit.
+
+**Q: Texture có luôn tốt hơn UICollectionView?** Không, profile same workload/frame hitches/memory, cân nhắc dependency và UIKit diffable/prefetch.
+
+**Q: ASNetworkImageNode dùng Kingfisher mặc định?** Không, có pipeline riêng; cần adapter/configuration nếu muốn dùng cache/downloader khác.

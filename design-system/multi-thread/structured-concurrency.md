@@ -178,3 +178,11 @@ Không gọi DispatchQueue.main.sync từ main queue (deadlock). Không dùng se
 **Q: Sendable class được không?** Có nếu immutable/thread-safe hoặc actor; compiler kiểm tra theo rule. @unchecked Sendable là cam kết của developer.
 
 **Bài tập:** Viết search cancel cũ, task group tối đa 4 request, actor token refresh. Test cancellation và concurrent callers.
+
+## Câu hỏi phỏng vấn tình huống
+
+**Q: Actor reentrancy khi await refresh token?** Task khác có thể vào actor trong suspension. Dùng in-flight task + session generation, kiểm tra invariant sau await.
+
+**Q: TaskGroup kết thúc khi child còn chạy?** Scope đợi children hoàn tất; throw/cancel yêu cầu cooperative cancellation, child phải cooperate.
+
+**Q: Swift 6 Sendable error với NSManagedObject?** Không truyền managed reference qua isolation; DTO/objectID và resolve ở context đúng. Không thêm @unchecked Sendable chỉ để hết warning.

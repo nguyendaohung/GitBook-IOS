@@ -125,3 +125,13 @@ Predicate parameterized tránh format injection; DTO String trả qua queue boun
 ### SwiftData và Core Data
 
 SwiftData (iOS 17+) là lựa chọn Swift-native persistence với @Model, ModelContainer, ModelContext và @Query. Core Data vẫn phù hợp app hỗ trợ OS cũ hoặc cần API/tooling hiện có. Xem [SwiftData](swift-data.md) để so sánh CRUD, UIKit/SwiftUI, ModelActor và migration; không migrate production store khi chưa kiểm tra schema/dữ liệu thực tế.
+
+## Câu hỏi phỏng vấn tình huống
+
+**Q: NSManagedObjectContext save child có ghi disk ngay?** Không nếu parent-child, child đẩy changes lên parent, parent cần save tới store; background context từ container thường save trực tiếp.
+
+**Q: Faulting và fetchBatchSize khác pagination?** Faulting lazy materialization, batch size giảm memory; fetchLimit/cursor mới giới hạn page, đo query/relationship N+1.
+
+**Q: Merge policy có giải quyết business conflict?** Chỉ xử lý context/store conflict theo policy; field ownership/server revision/idempotency cần repository logic.
+
+**Q: Khi migration fail có nên xóa store?** Không với user data; log/recovery/backup, test versioned model từ store thật. Cache tái tạo có policy riêng.

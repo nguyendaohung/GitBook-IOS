@@ -153,3 +153,11 @@ Controller map indexPath -> stable item ID từ snapshot hiện tại, giữ req
 **Q: Prefetch và lazy loading khác nhau?** Prefetch chuẩn bị trước khi visible, lazy chỉ khi cần; giới hạn prefetch để không tăng memory/network.
 
 **Bài tập:** Gallery 200 ảnh, đo memory trước/sau downsample; tạo layout dynamic text bằng native và SnapKit, test landscape/Dynamic Type.
+
+## Câu hỏi phỏng vấn tình huống
+
+**Q: Tại sao ảnh JPEG 2MB decode tốn 48MB?** 4000×3000×4 bytes RGBA ~48MB, compressed file size không phản ánh decoded memory. Downsample theo target pixel.
+
+**Q: Cache key ảnh gồm gì?** URL/asset ID + version + processor/size/scale; tránh stale content, riêng tư cần scope/clear khi logout.
+
+**Q: Diffable snapshot dùng indexPath làm ID?** Không, stable unique domain ID; indexPath đổi khi insert/delete/reorder. reconfigure content theo ID.

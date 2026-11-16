@@ -49,23 +49,22 @@ description: Some features which are usually asked in the interview
   * [Storyboard and Xib](ui-+-autolayout/storyboard-vs-xib.md)
   * [Autolayout Priority](ui-+-autolayout/autolayout-priority.md)
   * [SnapKit, Kingfisher và UI Performance](ui-+-autolayout/snapkit-image-performance.md)
-  * ContentInset , offset
-  * x, y, CGRect, Transform (Core Amination)
-  * **Core Graphics**
+  * [ScrollView, Core Animation, Core Graphics và Attributed String](ui-+-autolayout/scroll-animation-graphics-text.md)
   * [Core Location](ios-system-frameworks/core-location.md)
-  * attributedtext , String Operators
 * [Data Stroage](data-stroage/)
   * [Realm](data-stroage/realm.md)
   * [CoreData](data-stroage/core-data.md)
   * [SwiftData](data-stroage/swift-data.md)
   * [Keychain Access](data-stroage/keychain-access.md)
 * [RxSwift + MVVM](rxswift-+-mvvm-+-clean-architure.md)
+  * [Operators – Creation, Transformation, Filtering](rxswift/operators-foundation.md)
+  * [Operators – Flattening, Combining, Error, Sharing](rxswift/operators-composition.md)
+  * [RxSwift thực tế, MVVM và RxTest](rxswift/practical-patterns.md)
 * [Combine](combine.md)
 * [CI/CD, FastLane](production/release.md)
 * [Unit Test](production/testing.md)
 * [In-app purchase](monetization/storekit.md)
 * [Deeplink](ios-system-frameworks/notifications.md)
-* Orther
 * [GIT](git.md)
 * [Apple Carplay](apple-carplay.md)
 * [ADS with app ios](monetization/ads-analytics.md)
@@ -79,3 +78,11 @@ description: Some features which are usually asked in the interview
 ### Hướng dẫn học
 
 Mỗi bài tập trung định nghĩa, cơ chế hoạt động, ví dụ minh họa, lưu ý và Q&A.
+
+## Câu hỏi ôn tập tổng quan
+
+**Q: Lộ trình ôn iOS Middle/Senior?** Swift/ARC/Concurrency → UIKit/SwiftUI → Architecture/DI → Networking/Storage → RxSwift/Combine → framework hệ thống/monetization → testing/performance/release. Đọc Q&A theo từng bài và làm bài tập thực hành.
+
+**Q: Khi trả lời tình huống kỹ thuật nên trình bày thế nào?** Định nghĩa và contract → mechanism → chọn giải pháp/trade-off → ví dụ code/edge cases → cách test/đo. Chỉ dùng kinh nghiệm/số liệu thực tế đã xác nhận.
+
+**Q: Kiến thức nào phụ thuộc OS/SDK?** SwiftUI/SwiftData/StoreKit/NetworkExtension/watchOS và các SDK bên thứ ba; kiểm tra deployment target, availability, entitlement, migration và test device trước production.

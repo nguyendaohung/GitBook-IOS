@@ -120,3 +120,11 @@ Delegate queue main như ví dụ cấu hình trước, reset sau server respons
 **Q: Camera permission denied?** Giải thích và hướng dẫn Settings, fallback manual code nếu nghiệp vụ cho phép.
 
 **Bài tập:** Mock order pending→paid, callback duplicate, app restart, QR repeated frames và redeem already used.
+
+## Câu hỏi phỏng vấn tình huống
+
+**Q: PKCE, state và nonce có vai trò gì?** PKCE chống code interception/replay với verifier; state chống CSRF/correlation, nonce trong OIDC liên kết identity token với auth request. Verify theo provider/backend.
+
+**Q: Timeout payment POST có retry ngay?** Query order status/idempotency key trước; server có thể đã charge. Không tin URL callback là paid.
+
+**Q: Camera session chạy ở thread nào?** Configure/start/stop trên serial session queue, preview/UI main; delegate queue xác định callback, debounce/redeem state và server atomicity.

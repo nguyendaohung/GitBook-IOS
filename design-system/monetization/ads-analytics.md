@@ -98,3 +98,11 @@ Attribution đo install/re-engagement nguồn campaign. Last-touch, window, aggr
 **Q: Ad load success nhưng không show?** Expired, screen not active, concurrent presentation, premium/consent hoặc SDK error.
 
 **Bài tập:** Test AdGate premium đổi khi load, duplicate tap, reward dedup; fake analytics assert schema/event.
+
+## Câu hỏi phỏng vấn tình huống
+
+**Q: Rewarded ad đóng màn hình có cấp reward?** Không, earned reward callback/server verification theo SDK; dedup event để không cấp hai lần.
+
+**Q: User mua premium khi ad đang loading?** Recheck entitlement/consent trước present, invalidate loaded ad và guard stale callback; không show full-screen ad sau premium.
+
+**Q: Analytics event nào không nên ghi?** Token/receipt, SMS/phone/photo/PII không cần thiết. Dùng schema, sanitized IDs, consent, bounded queue và transaction dedup.

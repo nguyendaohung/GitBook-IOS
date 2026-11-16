@@ -125,3 +125,11 @@ Weak router tránh vòng giữ giữa coordinator → screen/presenter → coord
 **Q: Repository có phải chỉ bọc API?** Không, điều phối local/remote/cache, mapping và consistency; có thể bỏ abstraction thừa nếu app nhỏ.
 
 **Bài tập:** Tách màn hình API đang gọi trực tiếp URLSession khỏi VC thành Repository, UseCase, ViewModel; test success/empty/failure với fake.
+
+## Câu hỏi phỏng vấn tình huống
+
+**Q: DI vs Service Locator?** DI dependency explicit trong constructor/property; Service Locator tự resolve hidden dependencies, khó test/trace.
+
+**Q: Session-scoped dependency logout xử lý gì?** Cancel work, invalidate credential/cache theo user, tạo session scope mới, tránh old response ghi vào new session.
+
+**Q: Mock vs fake repository?** Mock verify interactions; fake có implementation đơn giản, stub trả kết quả cố định. Test behavior.

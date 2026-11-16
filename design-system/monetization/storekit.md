@@ -146,3 +146,13 @@ Xcode StoreKit config local, sandbox end-to-end, TestFlight sandbox. Test succes
 **Q: StoreKit vs VNPay?** Digital goods theo App Store rules; hàng hóa/dịch vụ ngoài app dùng gateway phù hợp, kiểm tra guideline/region.
 
 **Bài tập:** StoreKit config subscription + non-consumable, paywall/listener, test restore/refund/expiry và duplicate delivery.
+
+## Câu hỏi phỏng vấn tình huống
+
+**Q: currentEntitlements vs Transaction.updates?** CurrentEntitlements snapshot quyền hiện tại; updates event giao dịch mới/thay đổi khi app chạy. Start listener sớm và reconcile.
+
+**Q: Pending và unverified xử lý gì?** Pending chờ approval/payment, chưa grant; unverified không cấp quyền, log/error phù hợp. Verify before deliver/finish.
+
+**Q: Consumable dùng currentEntitlements đủ không?** Không, consumable cần persisted/server ledger, transaction ID dedup và balance; finish sau delivery.
+
+**Q: Renewal event server đến lệch thứ tự?** Verify JWS, dedup notification/transaction IDs, reconcile authoritative status qua App Store Server API; không overwrite entitlement theo arrival order.

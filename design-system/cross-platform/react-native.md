@@ -132,3 +132,13 @@ iOS permissions, APNs device token, location manager, foreground/background even
 **Q: FlatList lag?** Stable keys, virtualization, image cache/downsample, giảm expensive rerender; đo JS/native.
 
 **Bài tập:** Store list loading/empty/error/pagination, Axios cancel, test staging config và permission denied.
+
+## Câu hỏi phỏng vấn tình huống
+
+**Q: React Native bridge vs JSI/Fabric/TurboModules?** Legacy bridge serialize async messages; New Architecture dùng JSI/native integration và Fabric renderer/TurboModules tùy version. Không giả định mọi app đã migrate.
+
+**Q: useEffect dependency bỏ trống khi query thay đổi?** Có thể stale closure/result; khai báo dependencies đúng, cleanup abort/active flag, không mutate state trực tiếp.
+
+**Q: Axios 401 nhiều request refresh thế nào?** Single-flight refresh, replay một lần, exclude refresh request khỏi loop, invalidate session nếu fail. Secure storage token.
+
+**Q: JS thread bị block ảnh hưởng gì?** Event handling/render scheduling lag, native animation có thể khác; profile JS/native, tránh expensive computation trong render.

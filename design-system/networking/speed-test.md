@@ -127,3 +127,11 @@ Idle → latency → download → upload → result; error/cancel bất kỳ bư
 **Q: Tại sao kết quả đo không bằng tốc độ gói mạng?** Radio, congestion, TCP ramp-up, endpoint capacity, protocol overhead, VPN route và sampling.
 
 **Bài tập:** Tạo state reducer và mock delegate, test 10 MB/2s, samples unequal duration, cancel và path change.
+
+## Câu hỏi phỏng vấn tình huống
+
+**Q: Throughput application bytes vs wire bytes?** Delegate nhận payload bytes, wire có headers/TLS/compression/retransmission; báo rõ phương pháp.
+
+**Q: Average samples có duration khác nhau?** Tổng bytes/tổng duration cho sequential; parallel dùng tổng bytes/chung wall time, không trung bình speed đơn giản.
+
+**Q: Latency p95 và median dùng khi nào?** Median typical, p95 tail latency; nhiều samples cùng endpoint/path, ghi rõ HTTP/TCP/ICMP phương pháp.

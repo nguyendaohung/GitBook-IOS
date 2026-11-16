@@ -151,3 +151,11 @@ Value semantics không đồng nghĩa deep copy reference bên trong. ARC quản
 **Q: Codable và SwiftyJSON chọn gì?** API contract ổn định ưu tiên Codable; JSON động có thể dùng SwiftyJSON/JSONSerialization và validate tại boundary.
 
 **Bài tập:** Decode JSON có field optional, date sai format, field bắt buộc thiếu; assert lỗi. Viết generic repository và fake repository để test.
+
+## Câu hỏi phỏng vấn tình huống
+
+**Q: Generic constraint có thể dùng where?** Có, where biểu diễn quan hệ nhiều generic/associatedtype, ví dụ T.Element == U.Element; compiler kiểm tra compile time.
+
+**Q: Hashable có dùng hashValue làm persistent ID?** Không, hash có thể thay giữa process/run; dùng domain ID ổn định, equality/hash nhất quán.
+
+**Q: Missing field và null decode khác gì?** decodeIfPresent xử lý cả missing/null thành nil; nếu cần phân biệt, kiểm tra contains/decodeNil; type mismatch vẫn lỗi.

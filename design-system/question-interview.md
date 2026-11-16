@@ -5,7 +5,7 @@
 
 
 Q: Xử lý đăng nhập FaceID với IOS?\
-\- S1: Lưu lại tk và mk vào keychain Access, mỗi lần quét mặt lấy ra đăng nhập.\
+\- Không ưu tiên lưu password; lưu token có thể revoke trong Keychain và dùng LocalAuthentication/access control.\
 \- S2: khi đăng nhập sever cấp cho 1 token sau đó lưu xuống keychain Access lần sau vào lại lấy token đó gửi lên sever -> match thì cho login
 
 **Q1: Xử lý khi thực hiện 1 task nặng dưới background thread Swift ?**
@@ -24,7 +24,7 @@ Q: Xử lý đăng nhập FaceID với IOS?\
 
 * Tạo một OperationQueue với qualityOfService cài đặt là .background
 * Tạo một Operation với task cần thực hiện
-* Thêm Operation vào OperationQueue và gọi hàm start()
+* Thêm Operation vào OperationQueue; queue tự start, không gọi start() thêm.
 
 <figure><img src=".gitbook/assets/Screen Shot 2023-02-10 at 09.56.04.png" alt=""><figcaption><p>USE OPERATION </p></figcaption></figure>
 
@@ -95,3 +95,55 @@ Lưu ý rằng cách này có thể hiệu quả hơn khi xử lý các mảng n
 <figure><img src=".gitbook/assets/Screen Shot 2023-02-27 at 16.04.17.png" alt=""><figcaption></figcaption></figure>
 
 Nếu mảng chứa ít hơn 2 phần tử, hoặc tất cả các phần tử giống nhau, thì phần tử lớn thứ hai không tồn tại và kết quả sẽ là nil.
+
+## Bộ câu hỏi tổng hợp Middle/Senior – tình huống
+
+**Q: Face ID login có lưu password?** Ưu tiên refresh token trong Keychain với access control phù hợp, LocalAuthentication xác minh local user, server kiểm tra session/revocation. Không lưu password chỉ để login lại; không gửi biometric data lên server.
+
+**Q: Download 1000 ảnh giới hạn concurrent?** Bounded TaskGroup, async Operation lifecycle hoặc Rx merge(maxConcurrent:) cold source; downsample/cache, cancel reuse, không enqueue hàng nghìn blocking semaphore waits.
+
+**Q: App API lỗi 401 nhiều request?** Single-flight refresh, replay mỗi request tối đa một lần, invalidate session khi refresh fail, không refresh loop.
+
+**Q: SwiftUI @StateObject vs @ObservedObject?** Ownership/lifetime theo identity vs quan sát object được inject; @Observable iOS17 dùng Observation.
+
+**Q: SwiftData vs Core Data?** SwiftData Swift macros/ModelContext/@Query iOS17+, Core Data context/model/tooling trưởng thành; chọn target và migration.
+
+**Q: RxSwift flatMapLatest vs flatMapFirst?** Latest dispose inner cũ phù hợp search; first bỏ triggers khi inner active phù hợp submit; server side effect vẫn cần idempotency.
+
+**Q: Rx retry(2) là hai lần retry?** Không, tối đa 2 attempts, một retry.
+
+**Q: StoreKit transaction success có cấp premium ngay?** Verify, deliver idempotent, cập nhật entitlement, finish sau delivery; pending/unverified không grant.
+
+**Q: VPN start call thành công là connected?** Không, observe NEVPNStatus, permission/server/timeout và provider readiness.
+
+**Q: Call Directory reload fail vì sao?** Disabled, list trùng/không tăng dần, resource, version mismatch; validate/last-known-good.
+
+**Q: WatchConnectivity sendMessage vs transferFile?** Interactive reachable vs queued file transfer; receiver copy temporary URL, không assume immediate.
+
+**Q: Core Data/SwiftData model qua thread?** Không truyền managed object tùy ý, DTO/objectID/PersistentIdentifier và resolve context/actor đích.
+
+**Q: Tìm second distinct maximum O(n)?** Duyệt một lần giữ largest và second, bỏ duplicate largest; nil nếu không đủ hai giá trị khác nhau.
+
+```swift
+func secondLargest(_ values: [Int]) -> Int? {
+    var largest: Int?
+    var second: Int?
+    for value in values {
+        if let max = largest {
+            if value > max {
+                second = max
+                largest = value
+            } else if value < max && (second.map { value > $0 } ?? true) {
+                second = value
+            }
+        } else {
+            largest = value
+        }
+    }
+    return second
+}
+```
+
+**Q: Dedup array giữ thứ tự O(n) expected?** Set seen, filter khi insert(...).inserted, không dùng Array(Set(array)) nếu cần order.
+
+Đọc Q&A theo từng chương để có giải thích và ví dụ đầy đủ. Khi phỏng vấn trả lời định nghĩa → cơ chế → trade-off → ví dụ thực tế đã xác nhận, không tự gán số liệu/SDK chưa sử dụng.

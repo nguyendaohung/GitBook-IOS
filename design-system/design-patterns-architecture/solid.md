@@ -465,3 +465,19 @@ Nguyên lý này khá quan trọng đối với lập trình viên. Và nó cũn
 ## **3. Kết luận**
 
 Nếu bạn làm theo nguyên lý SOLID,  bạn có thể tăng chất lượng code của mình. Code của chúng ta sẽ trở nên dễ đọc, dễ bảo trì và dễ mở rộng hơn cho sau này. Tuy nhiên, để áp dụng nguyên lý SOLID vào dự án thực tế sẽ có nhiều khó khăn hơn. Nhưng vì thế, chúng ta càng phải nên nắm vững kiến thức nền tảng này để có thể áp dụng và sửa đổi khi làm dự án thực tế nhé.
+
+## SOLID – Q&A tình huống iOS
+
+SRP là một lý do thay đổi (actor/stakeholder), không phải chỉ một method. OCP ưu tiên extension point phù hợp, không cấm sửa code khi bug/requirement đổi. LSP subtype phải giữ contract/invariant/precondition/postcondition, không chỉ compile. ISP protocol nhỏ theo client needs. DIP dependency source hướng abstraction; DI là kỹ thuật cung cấp dependency, không đồng nghĩa DIP.
+
+**Q: SRP với ViewController 1000 dòng?** Tách presentation/state, API/repository, navigation và reusable view theo lý do thay đổi; không chia file tùy tiện.
+
+**Q: OCP ví dụ?** Payment/cache strategy protocol, thêm implementation mới mà caller không sửa switch liên tục; tránh abstraction khi chưa cần.
+
+**Q: LSP ví dụ vi phạm?** Subtype làm method hợp lệ của base throw vì không hỗ trợ hành vi; tách protocol/contract đúng.
+
+**Q: ISP ví dụ?** ReadOnlyRepository chỉ fetch, writer protocol riêng; view read-only không implement delete rỗng.
+
+**Q: DIP vs DI?** DIP là nguyên tắc high/low-level phụ thuộc abstraction; DI inject concrete implementation qua initializer để thực hiện.
+
+**Q: Có phải SOLID luôn cần nhiều protocol?** Không, cân bằng complexity, testability và khả năng thay đổi; tránh lớp chỉ forward.

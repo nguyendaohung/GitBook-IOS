@@ -127,3 +127,11 @@ viewDidLoad không có tương đương hoàn toàn trong SwiftUI. View struct i
 **Q: Khi nào deinit không chạy?** Retain cycle, coordinator/parent giữ VC, observer/timer/subscription còn giữ object; dùng Memory Graph.
 
 **Bài tập:** Push/pop VC, log lifecycle, rotate device; thêm task/cancellation và kiểm tra deinit.
+
+## Câu hỏi phỏng vấn tình huống
+
+**Q: viewDidLoad và viewWillAppear chọn chỗ gọi API?** viewDidLoad setup/binding, load một lần mỗi VC nếu phù hợp; viewWillAppear refresh theo nghiệp vụ, có thể lặp. Cancel/guard stale results.
+
+**Q: Child ViewController containment đúng thứ tự?** addChild, add child.view/layout, didMove; remove gọi willMove(nil), remove view, removeFromParent.
+
+**Q: viewDidDisappear có nghĩa VC deinit?** Không, navigation stack/presenter/owner vẫn có thể giữ; cancel visibility work tùy lifetime.

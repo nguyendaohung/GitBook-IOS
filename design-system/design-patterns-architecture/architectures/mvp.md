@@ -44,5 +44,51 @@ Vì Presenter đã tách code business logic ra khỏi View nên sẽ giúp chú
 ### &#x20;Kết luận 📔 <a href="#id-6-ket-luan--9" id="id-6-ket-luan--9"></a>
 
 * MVP bao gồm 3 phần: Model, View và Presenter
-* View và Presenter không biết sự tồn tại của nhau, vì chúng giao tiếp với nhau thông qua protocol
+* View và Presenter phụ thuộc contract của nhau qua protocol, không cần phụ thuộc concrete implementation
 * Presenter là nơi xử lý business logic và truyền lại cho View để hiển thị data
+
+## MVP thực tế: passive view và Presenter
+
+```swift
+protocol ProfileView: AnyObject {
+    func showLoading(_ value: Bool)
+    func showName(_ name: String)
+    func showError(_ message: String)
+}
+
+protocol ProfileService {
+    func loadName() async throws -> String
+}
+
+@MainActor
+final class ProfilePresenter {
+    weak var view: (any ProfileView)?
+    private let service: any ProfileService
+
+    init(service: any ProfileService) { self.service = service }
+
+    func load() async {
+        view?.showLoading(true)
+        defer { view?.showLoading(false) }
+        do {
+            let name = try await service.loadName()
+            try Task.checkCancellation()
+            view?.showName(name)
+        } catch is CancellationError {
+            return
+        } catch {
+            view?.showError("Could not load")
+        }
+    }
+}
+```
+
+VC conform ProfileView, giữ presenter, gọi load từ lifecycle/action; presenter weak view, service inject. Presenter biết View protocol, View biết Presenter contract, không biết concrete implementation tùy thiết kế. Business rules phức tạp tách UseCase/domain; presenter điều phối presentation. Production cần generation/loading ownership khi load overlap.
+
+**Q: MVP vs MVVM?** MVP gọi view methods; MVVM expose state/binding để view observe.
+
+**Q: Vì sao weak View?** VC giữ presenter, presenter strong VC tạo retain cycle.
+
+**Q: Test Presenter như thế nào?** Mock View ghi calls, fake service trả success/error, assert loading và render.
+
+**Q: Massive Presenter xử lý?** Tách use case/repository/mapper/coordinator, presenter giữ presentation logic.

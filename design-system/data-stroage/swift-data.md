@@ -683,3 +683,13 @@ Test target dùng @testable import app module thực tế. Mỗi test container 
 * [SchemaMigrationPlan](https://developer.apple.com/documentation/swiftdata/schemamigrationplan)
 * [Preserving your app’s model data across launches](https://developer.apple.com/documentation/swiftdata/preserving-your-apps-model-data-across-launches)
 * [Core Data](core-data.md) · [Realm](realm.md) · [SwiftUI](../ui-+-autolayout/swiftui.md)
+
+## Câu hỏi phỏng vấn tình huống
+
+**Q: Save/Cancel editor dùng @Bindable trực tiếp có an toàn?** Live edit thay model và autosave có thể commit trước Cancel; dùng @State draft, validate rồi apply/save, rollback đúng scope.
+
+**Q: PersistentIdentifier có dùng thay remoteID?** Không, identifier theo store, business ID dùng sync/backend và stable domain identity; temporary ID chưa persisted cần cẩn thận.
+
+**Q: Background import làm @Query không refresh như kỳ vọng?** Test OS/context behavior, save writer, refresh/reconcile qua repository/UI state; không truyền @Model instance giữa actor.
+
+**Q: Test migration in-memory đủ không?** Không, cần disk store version cũ, mở bằng schema mới, assert records/relationships/defaults; test failure/rollback.

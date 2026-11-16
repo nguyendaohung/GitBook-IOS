@@ -65,3 +65,11 @@ Module nhiều nghiệp vụ, team lớn cần boundary rõ, reuse/test; nhượ
 **Q: Router có business logic?** Không; route/module composition, navigation; auth/business decision ở domain/presenter theo contract.
 
 **Bài tập:** Tạo article module, test success/not found/navigation, thay repository fake.
+
+## Câu hỏi phỏng vấn tình huống
+
+**Q: VIPER có phù hợp mọi screen?** Không, nhiều protocol/module builder/boilerplate; chọn khi boundary/testability mang giá trị, MVVM/MVP nhẹ hơn cho feature nhỏ.
+
+**Q: Test Router và Presenter thế nào?** Mock View/Router ghi calls, fake Interactor trả result; assert render/route. Test business Interactor riêng.
+
+**Q: Router giữ VC mạnh có rủi ro?** Có, VC→Presenter→Router→VC cycle; weak reference khi phù hợp, owner navigation giữ đúng lifetime.

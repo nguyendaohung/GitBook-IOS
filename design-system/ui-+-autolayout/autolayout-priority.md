@@ -15,4 +15,29 @@ Ví dụ: có 2 label trong 1 hàng.&#x20;
 
 Ví dụ: có 2 button trong 1 hàng. 2 button này có title dài hơn chiều dài màn hình.
 
-* Button 1 nếu có priority lớn hơn Button 2 thì Button 1 sẽ được kéo dài (so với title của nó) còn Button 2 bị co vào
+* Button 1 nếu có priority lớn hơn Button 2 thì Button 1 ưu tiên giữ intrinsic size còn Button 2 bị co trước
+
+## Auto Layout: priority, CHCR và lỗi thực tế
+
+```swift
+import UIKit
+
+let title = UILabel()
+let value = UILabel()
+title.setContentHuggingPriority(.defaultHigh, for: .horizontal)
+value.setContentHuggingPriority(.defaultLow, for: .horizontal)
+title.setContentCompressionResistancePriority(.required, for: .horizontal)
+value.setContentCompressionResistancePriority(.defaultHigh, for: .horizontal)
+```
+
+Trong horizontal stack, title chống giãn tốt hơn và chống co tốt hơn value. Hugging: chống lớn hơn intrinsic size; compression resistance: chống nhỏ hơn intrinsic. Priority 1000 required, 1...999 optional. Nếu required conflict, system break constraint và log; nếu thiếu constraints, ambiguous layout. Dùng symbolic breakpoint UIViewAlertForUnsatisfiableConstraints, hasAmbiguousLayout, debug view hierarchy. Không set mọi CHCR required nếu Dynamic Type text dài có thể conflict.
+
+**Q: Hugging vs compression?** Hugging chống stretch, compression chống shrink.
+
+**Q: Vì sao priority 999?** Optional gần required tạo đường thoát khi conflict; dùng có lý do, không che layout bug.
+
+**Q: translatesAutoresizingMaskIntoConstraints?** Programmatic constraints thường false để không sinh mask constraints xung đột; storyboard system quản lý.
+
+**Q: Auto Layout vs SwiftUI layoutPriority?** Auto Layout constraint solver/CHCR, SwiftUI proposal/size selection; layoutPriority không tương đương 1000 required.
+
+**Bài tập:** Hai labels trong stack, test title dài/RTL/Dynamic Type và thay CHCR.

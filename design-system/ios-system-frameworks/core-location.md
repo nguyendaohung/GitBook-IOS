@@ -109,3 +109,11 @@ Camera center/zoom/bearing/tilt; marker là point, polyline route là chuỗi t�
 **Q: Map search sai sau pan nhanh?** Cancel/ignore stale result theo query generation; debounce camera idle, diff marker ID.
 
 **Bài tập:** Mock location provider, test denied/reduced/stale, tính khoảng cách 2 điểm, debounce viewport search.
+
+## Câu hỏi phỏng vấn tình huống
+
+**Q: CLLocation timestamp cũ và accuracy âm?** Reject invalid accuracy, kiểm tra age/max accuracy theo feature; không update camera từ stale sample.
+
+**Q: distance(from:) có là khoảng cách đường đi?** Không, geodesic straight-line; routing server/SDK tính road network, ETA tùy traffic.
+
+**Q: Background location có luôn chạy nếu Always?** Không, system policy/capability/configuration/permission và feature-specific behavior; tiết kiệm pin, stop khi không cần.

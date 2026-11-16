@@ -128,3 +128,13 @@ Giữ cancellable từ sink; switchToLatest cancel inner cũ. Production dùng s
 **Q: Combine vs async/await?** Combine compose nhiều event, typed failure/demand; async/await biểu diễn flow tuần tự hoặc structured concurrency. AsyncSequence phù hợp stream, publisher.values là bridge nhưng cần hiểu buffering/lifetime.
 
 **Bài tập:** Tạo search publisher và validation form, test nhiều subscriber, cancellation và error recovery.
+
+## Câu hỏi phỏng vấn tình huống
+
+**Q: Future vs Deferred?** Future thực hiện closure lúc tạo, lưu kết quả; Deferred tạo publisher khi subscribe. Dùng deferred cho cold retry work.
+
+**Q: switchToLatest vs flatMap?** Switch hủy inner cũ, latest only; flatMap merge inner, có maxPublishers để giới hạn active subscriptions.
+
+**Q: Combine share() replay latest không?** Không, share live upstream; CurrentValueSubject giữ latest, thiết kế cache/state owner riêng.
+
+**Q: receive(on:) có thay MainActor?** Runtime scheduler delivery khác compiler actor isolation; UI mutation phải tuân actor contract.

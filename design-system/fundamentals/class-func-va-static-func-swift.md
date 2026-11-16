@@ -19,3 +19,26 @@ Tuy nhiên, nếu bạn muốn có một phương thức tính chu vi cố đị
 <figure><img src="../.gitbook/assets/Screen Shot 2023-02-23 at 15.02.52.png" alt=""><figcaption></figcaption></figure>
 
 Trong trường hợp này, phương thức `calculateCircumference()` được khai báo là một `static func` để xác định một phương thức độc lập với bất kỳ lớp nào, và không muốn nó bị ghi đè.
+
+## Ví dụ chạy được và Q&A
+
+```swift
+class Formatter {
+    class func name() -> String { "Base" }
+    static func version() -> Int { 1 }
+}
+final class JSONFormatter: Formatter {
+    override class func name() -> String { "JSON" }
+}
+let type: Formatter.Type = JSONFormatter.self
+print(type.name()) // JSON
+print(JSONFormatter.version()) // 1, inherited
+```
+
+static method của class có thể được kế thừa nhưng không override; class func có dynamic dispatch. struct/enum dùng static, không class func. Type method không cần instance, có thể truy cập static/class members phù hợp; không truy cập instance properties nếu không có instance.
+
+**Q: static vs class?** static không override; class func override trong subclass.
+
+**Q: final class func có ý nghĩa?** Ngăn override như static đối với method class; chọn API rõ ràng.
+
+**Q: Protocol static requirement dùng class func implement được?** Class có thể đáp ứng bằng static/class method theo requirement; dynamic behavior tùy implementation.

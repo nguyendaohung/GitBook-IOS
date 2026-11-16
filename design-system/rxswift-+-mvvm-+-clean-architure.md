@@ -176,3 +176,21 @@ Dùng TestScheduler tạo hot query events và cold fake response, inject schedu
 **Q: Subscribe nhiều lần tại sao gọi API nhiều lần?** Cold stream tạo work mỗi subscription; share khi cần chung execution.
 
 **Bài tập:** Search có debounce, retry, empty/loading/error; đổi flatMapLatest thành flatMap và quan sát stale result.
+
+## Học sâu RxSwift theo từng nhóm
+
+* [Creation, Transformation, Filtering và Time](rxswift/operators-foundation.md): input/output, timeline, code, use case và lỗi thường gặp.
+* [Flattening, Combining, Error và Sharing](rxswift/operators-composition.md): chọn flatMap/flatMapLatest/concatMap/flatMapFirst, zip/combineLatest/withLatestFrom, retry/catch và scheduler.
+* [RxSwift thực tế, MVVM và RxTest](rxswift/practical-patterns.md): search, login, pagination, API state, UIKit binding và virtual-time tests.
+
+### Q&A tổng hợp
+
+**Q: Observable vs Single vs Maybe vs Completable?** Observable 0..n values; Single đúng một success/error; Maybe một success hoặc complete rỗng/error; Completable chỉ completed/error. Infallible không phát error. Chọn trait theo contract, không ép mọi stream thành Single.
+
+**Q: Subject vs Relay?** Subject có terminal error/completed; Relay không terminal, phù hợp UI state/events. BehaviorRelay giữ latest value, PublishRelay không replay; Relay không tự thread-safe cho compound mutation.
+
+**Q: Driver vs Signal?** Cả hai UI traits không error, main scheduler và share; Driver replay latest 1 while connected, Signal không replay, phù hợp event navigation/toast. Không xem Signal là durable event queue.
+
+**Q: Vì sao cần phân biệt state và event?** State mới subscriber cần giá trị hiện tại; event một lần không nên replay để tránh navigate/show toast lại.
+
+**Q: RxSwift có backpressure không?** Observable không có demand protocol như Combine; giới hạn concurrency, buffer/window, throttle/sample và bounded queue theo nghiệp vụ.

@@ -149,3 +149,11 @@ CLKWatchFaceLibrary import file hợp lệ tùy OS/device, user/system kiểm so
 **Q: Có tạo third-party native face hoàn chỉnh?** Không; chia sẻ/import face hỗ trợ và complication, system giới hạn.
 
 **Bài tập:** Picker + thumbnail, test iCloud/offline/limited/cancel, gallery memory; tạo WidgetKit complication demo trên watchOS hỗ trợ.
+
+## Câu hỏi phỏng vấn tình huống
+
+**Q: PHAsset vs UIImage?** PHAsset metadata/identifier của library, UIImage decoded image object; fetch targetSize theo pixel, iCloud/limited permission.
+
+**Q: PHPicker result có thể dùng file URL lâu dài?** ItemProvider temporary file phải copy khi callback còn hiệu lực, validate type/size, cleanup. Không assume toàn bộ photo library quyền truy cập.
+
+**Q: WidgetKit complication có update mỗi giây?** Timeline/reload budget do system quản lý; không bảo đảm arbitrary refresh. Face installation và complication là API khác nhau.

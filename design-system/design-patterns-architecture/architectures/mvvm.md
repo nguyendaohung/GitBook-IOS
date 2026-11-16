@@ -107,3 +107,11 @@ State có latest value (loading/content/error), event một lần (navigate/toas
 **Q: MVVM + Clean có trùng nhau?** Không, MVVM là presentation pattern; Clean là boundary/dependency architecture.
 
 **Bài tập:** Implement CatalogViewModel, bind cùng state vào UIKit và SwiftUI (thay observation adapter), fake success/empty/error/cancel. Xem [DI](../dependency-injection.md).
+
+## Câu hỏi phỏng vấn tình huống
+
+**Q: Two-way binding có bắt buộc?** Không. Input actions -> state one-way dễ kiểm soát; Binding chỉ dùng khi thật sự cần two-way editing.
+
+**Q: ViewModel emit navigation thế nào?** Route intent/event một lần cho Coordinator/View; không replay navigation như state. Auth check/business rule ở domain.
+
+**Q: ViewModel test loading state async?** Inject controllable fake repository/scheduler, assert state transition và stale/cancellation, không sleep thực.

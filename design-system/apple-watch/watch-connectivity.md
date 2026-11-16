@@ -136,3 +136,13 @@ WCSession sync giữa companion devices, không thay backend cho nhiều user/de
 **Q: Duplicate khi retry?** Event ID, persist dedup, idempotent apply và version.
 
 **Bài tập:** Sync favorites context, event userInfo và thumbnail file; test offline, đổi watch, duplicate, stale version.
+
+## Câu hỏi phỏng vấn tình huống
+
+**Q: isPaired, isWatchAppInstalled và isReachable khác nhau?** Paired/installed mô tả companion presence trên iOS; reachable cho interactive messaging hiện tại, có thể đổi ngay.
+
+**Q: Watch đổi pairing thì session thế nào?** iOS inactive/deactivate callbacks, reactivate session và reconcile watch-specific state; không dùng stale queued state tùy ý.
+
+**Q: File transfer receiver cần làm gì?** Copy/move temporary URL trong callback trước system cleanup, validate metadata/file, dedup/version; không giữ URL tạm.
+
+**Q: Multi-device conflict favorites?** Stable item IDs + authority/version/merge policy, event dedup; applicationContext chỉ latest snapshot, không event log.

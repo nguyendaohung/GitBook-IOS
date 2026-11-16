@@ -60,7 +60,7 @@ print(b.name) // In ra "MH"
 ```
 
 * Inheritance (kế thừa): Struct không thể kế thừa, còn class thì có thể ( hiển nhiên – OOP mà).
-* Deinitializers: Struct không có hàm huỷ (destructor trong java/C++), chỉ có hàm khởi tạo initializer (constructor trong java/C++), còn Class thì có đầy đủ
+* Deinitializers: Struct copyable thông thường không có deinit; class có deinit. Noncopyable struct có quy tắc riêng trong Swift hiện đại
 * Class là kiểu Reference Type, do đó có thể thay đổi trực tiếp giá trị của các thuộc tính qua phương thức của nó. Còn với Struct ta phải khai báo từ khoá **mutating** trước phương thức để làm việc đó.
 * Khi tạo Struct, sẽ mặc định sinh ra một hàm khởi tạo với đầy đủ tham số tương ứng với tất cả Stored Properties (gọi là Memberwise Initializer). Còn Class thì không có. Do đó khi tạo một class, ta sẽ phải khai báo Optional cho các thuộc tính hoặc phải tự định nghĩa một hàm khởi tạo.
 * The way they deal with constants:
@@ -74,6 +74,7 @@ struct StructA {
 
 class ClassB {
     var name: String
+    init(name: String) { self.name = name }
 }
 
 func viewDidLoad() {
@@ -91,13 +92,13 @@ func viewDidLoad() {
 
 **Struct:**
 
-*   Nếu dữ liệu của bạn là các dữ liệu đơn giản không cần các phương thức hoặc thuộc tính tính toán hoặc không cần sử dụng tính chất kế thừa, thì sử dụng Struct là lựa chọn tốt hơn. Structs là giá trị dữ liệu đại diện cho một đối tượng và sẽ được sao chép khi gán hoặc truyền vào hàm.
+*   Nếu dữ liệu của bạn là các dữ liệu đơn giản có value semantics và không cần class identity/inheritance, thì sử dụng Struct là lựa chọn tốt hơn. Structs là giá trị dữ liệu đại diện cho một đối tượng và sẽ được sao chép khi gán hoặc truyền vào hàm.
 
 
 
 **Class:**
 
-* Trong khi đó, nếu dữ liệu của bạn cần các phương thức hoặc thuộc tính tính toán hoặc cần sử dụng kế thừa thì sử dụng Class là lựa chọn tốt hơn. Classes là các đối tượng đại diện cho một đối tượng và chỉ có một bản sao chung cho tất cả các tham chiếu đến nó.
+* Trong khi đó, nếu cần reference identity/shared lifetime hoặc class inheritance thì sử dụng Class là lựa chọn tốt hơn. Classes là các đối tượng đại diện cho một đối tượng và chỉ có một bản sao chung cho tất cả các tham chiếu đến nó.
 
 **Ví dụ:**
 
@@ -110,3 +111,34 @@ func viewDidLoad() {
 <figure><img src="../.gitbook/assets/Screen Shot 2023-02-10 at 15.59.51.png" alt=""><figcaption></figcaption></figure>
 
 Như vậy, trong trường hợp này, sử dụng Class cho phù hợp hơn vì nó cần phải có các phương thức để xử lý việc đăng nhập và đăng ký của người dùng. Trong khi đó, sử dụng Struct cho phù hợp hơn cho việc lưu trữ thông tin địa chỉ.
+
+## Value semantics, identity và chọn type
+
+Struct có thể có methods/computed properties, protocol conformance; không chọn class chỉ vì có logic. Class cần identity/shared mutable lifetime/inheritance hoặc framework yêu cầu (UIViewController, SwiftData @Model). Struct thường copy value, Array/String/Dictionary dùng copy-on-write; không phải mọi struct luôn deep-copy nếu chứa class reference. Allocation stack/heap là implementation detail. Noncopyable types có quy tắc riêng trong Swift hiện đại; deinit của struct copyable thông thường không có.
+
+```swift
+final class Box { var value = 0 }
+struct Wrapper { var box = Box() }
+
+let first = Wrapper()
+let second = first
+second.box.value = 10
+print(first.box.value) // 10: shared reference inside struct
+
+class User {
+    var name: String
+    init(name: String) { self.name = name }
+}
+let user = User(name: "A")
+user.name = "B" // let giữ reference, không khóa object
+```
+
+**Q: Struct có luôn stack, class luôn heap?** Không nên dựa vào allocation, compiler có thể optimize. Value/reference semantics mới là contract.
+
+**Q: let class có immutable không?** Reference không thể gán lại, mutable properties vẫn thay được.
+
+**Q: Struct có copy-on-write tự động không?** Không phải mọi struct; standard collections implement COW, custom struct cần thiết kế nếu storage reference.
+
+**Q: SwiftData model nên struct hay class?** @Model class; domain DTO có thể struct Sendable. Không truyền managed model qua isolation boundary.
+
+**Bài tập:** So sánh copy array, struct chứa class, class identity ===; tạo value model DTO và class owner.

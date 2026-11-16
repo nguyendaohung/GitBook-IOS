@@ -15,3 +15,26 @@ Vấn đề:
   * Dùng **barrier** của GCD: có 1 điểm sync ⇒ Nhanh
 
 Nhược điểm: Vì nó tồn tại từ lúc khởi tạo cho đến cuối cùng. Nên nếu tạo nhiều singleton thì tốn bộ nhớ.
+
+## Singleton và thread safety
+
+```swift
+actor SessionStore {
+    static let shared = SessionStore()
+    private var token: String?
+    private init() {}
+
+    func update(_ value: String?) { token = value }
+    func current() -> String? { token }
+}
+```
+
+static let khởi tạo lazy một lần thread-safe; không có nghĩa mutable state của instance thread-safe. Actor bảo vệ state, nhưng qua await vẫn có logical race. GCD concurrent custom queue + barrier cho writes, sync reads phải tránh reentrant deadlock; barrier không có ý nghĩa exclusive trên global concurrent queue. Singleton không tự giải phóng khi screen đóng; logout clear credentials/state và cancel work. Prefer DI protocol, composition root giữ app-scoped instance thay global accessor.
+
+**Q: Singleton thread-safe?** Initialization static let thread-safe, mutable state cần isolation/lock/queue.
+
+**Q: Singleton vs shared dependency?** Shared instance inject được, caller không cần global; singleton pattern giới hạn instance/access.
+
+**Q: Khi nào không dùng?** Screen/session state, cần nhiều instance/test isolation; global mutable state làm coupling.
+
+**Q: Actor singleton có tránh mọi race?** Data race isolated state, logical race qua await vẫn cần invariant/generation.

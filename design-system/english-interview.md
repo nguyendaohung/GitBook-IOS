@@ -110,3 +110,31 @@ To be a team-player - to work well with others (Làm việc nhóm tốt)
 21. &#x20;Bạn mong đợi người quản lý của mình sẽ như thế nào? (**How do you expect your manager to be?**
 
 * &#x20; I expect a boss with good expertise to be able to support me and give me advice in my work. Besides, the boss is the one who listens, shares, and encourages the staff
+
+## Technical interview practice (Middle/Senior)
+
+Các đoạn giới thiệu cũ ở trên là mẫu lịch sử; cập nhật tuổi, số năm kinh nghiệm, mục tiêu và thông tin cá nhân theo CV thực tế trước khi dùng. Không học thuộc số liệu hoặc câu chuyện không đúng.
+
+**Q: How do you choose between UIKit and SwiftUI?**
+
+A: I consider the deployment target, existing codebase, UI complexity and SDK compatibility. UIKit gives explicit control over view controllers and layout. SwiftUI makes state-driven interfaces easier to compose. I can introduce SwiftUI incrementally with UIHostingController while sharing the same domain and data layers.
+
+**Q: How do you prevent stale search results?**
+
+A: I debounce the input, remove consecutive duplicates and use flatMapLatest or task cancellation so only the latest query updates the UI. I also handle errors inside the request stream and use a request generation when cancellation cannot stop the underlying operation.
+
+**Q: How do you investigate a performance issue?**
+
+A: I reproduce the issue on a representative device, measure a baseline with Instruments, identify the bottleneck, apply a focused fix and measure again. I check memory, main-thread work and network timing instead of assuming the cause.
+
+**Q: How do you ensure data consistency?**
+
+A: I define a source of truth, use stable identifiers, isolate writes, handle errors and migrations, and test offline and concurrent changes. I avoid sharing managed model instances across contexts.
+
+**Q: How do you handle an unfamiliar production bug?**
+
+A: I collect the reproduction steps, logs and crash information, isolate the affected component, propose a small verified fix and add a regression test. I communicate risks and monitor the result after release.
+
+**Q: Tell me about a challenging technical decision.**
+
+A: Use a real example: explain the requirement, alternatives, trade-offs, your specific contribution and how you verified the outcome. Do not invent metrics or claim responsibility for work you did not perform.

@@ -41,3 +41,26 @@ Exe 1
 Exe 3
 Exe 2
 ```
+
+## Sync/async thực tế
+
+```swift
+let queue = DispatchQueue(label: "work")
+print("1")
+queue.sync { print("2") }
+print("3") // 1,2,3
+
+print("A")
+queue.async { print("B") }
+print("C") // A trước; B/C có thể theo bất kỳ thứ tự tương đối
+```
+
+async enqueue không bảo đảm B sau C; ví dụ cũ có wait nên thường C trước B, không phải contract. sync block caller đến khi work hoàn thành, không đồng nghĩa main thread. async/await suspend task khi API hỗ trợ, khác GCD async fire-and-forget; await không tự chạy CPU-heavy background.
+
+**Q: async vs concurrent?** Async liên quan caller có đợi hay không; concurrent liên quan nhiều work overlap. Serial async vẫn serial.
+
+**Q: async/await có block thread?** Await có thể suspend; synchronous work bên trong async vẫn block executor/thread.
+
+**Q: Làm sao đợi hai request?** async let/TaskGroup, DispatchGroup notify cho callback; không semaphore.wait trên main.
+
+**Q: Khi nào sync hợp lý?** Work ngắn cần kết quả ngay, hoặc synchronous access qua isolation queue không reentrant; tránh UI/I/O dài.

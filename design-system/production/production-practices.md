@@ -77,3 +77,11 @@ Client không đáng tin: backend authorize từng resource, validate order/amou
 **Q: ATT denied có nghĩa không analytics?** Không đồng nhất; tracking theo Apple definition cần permission, first-party analytics vẫn phải tuân privacy/consent.
 
 **Bài tập:** Review một API client có log token/skip trust và sửa; localize screen với plural/RTL, test VoiceOver.
+
+## Câu hỏi phỏng vấn tình huống
+
+**Q: String(localized:) có tự xử lý plural mọi ngôn ngữ?** Cần String Catalog/stringsdict plural variants và context; format locale, test translations/RTL.
+
+**Q: Privacy manifest vs ATT?** Manifest mô tả data/required-reason APIs theo requirements; ATT permission cho tracking theo Apple definition; labels/consent là layer riêng.
+
+**Q: AI tạo API không tồn tại xử lý?** Đối chiếu docs/SDK version, compile/test, review concurrency/security/license, không gửi secret/user data ngoài policy.

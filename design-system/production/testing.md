@@ -178,3 +178,13 @@ App test build phải hỗ trợ launch arguments và accessibilityIdentifier; f
 **Q: Unit test vs UI test?** Unit nhanh và isolated, UI test end-to-end user flow; bổ sung integration ở boundary.
 
 **Bài tập:** Viết test success/empty/failure/cancel cho ViewModel, test pagination duplicate và 401 refresh single-flight.
+
+## Câu hỏi phỏng vấn tình huống
+
+**Q: Test async cancellation không sleep?** Inject controllable fake/clock, signal start, cancel task và resolve fake theo contract, assert state và stale result; RxTest virtual time cho reactive.
+
+**Q: Test migration SwiftData/Core Data dùng in-memory đủ?** Không, disk store schema cũ mở schema mới, verify data/relations; in-memory tốt cho CRUD logic.
+
+**Q: Coverage 100% có đủ?** Không, branch/edge cases/assertion quality và critical flow quan trọng; test behavior/error/cancellation, integration/device.
+
+**Q: UI test flaky xử lý?** Stable accessibilityIdentifier, deterministic backend/fixtures, waitForExistence/conditions, reset state; không tăng sleep tùy ý.
