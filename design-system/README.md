@@ -56,10 +56,10 @@ description: Some features which are usually asked in the interview
   * [CoreData](data-stroage/core-data.md)
   * [SwiftData](data-stroage/swift-data.md)
   * [Keychain Access](data-stroage/keychain-access.md)
-* [RxSwift + MVVM](rxswift-+-mvvm-+-clean-architure.md)
-  * [Operators – Creation, Transformation, Filtering](rxswift/operators-foundation.md)
-  * [Operators – Flattening, Combining, Error, Sharing](rxswift/operators-composition.md)
-  * [RxSwift thực tế, MVVM và RxTest](rxswift/practical-patterns.md)
+* [RxSwift + MVVM](rxswift-+-mvvm-+-clean-architure/)
+  * [Operators – Creation, Transformation, Filtering](rxswift-+-mvvm-+-clean-architure/operators-foundation.md)
+  * [Operators – Flattening, Combining, Error, Sharing](rxswift-+-mvvm-+-clean-architure/operators-composition.md)
+  * [RxSwift thực tế, MVVM và RxTest](rxswift-+-mvvm-+-clean-architure/practical-patterns.md)
 * [Combine](combine.md)
 * [CI/CD, FastLane](production/release.md)
 * [Unit Test](production/testing.md)
@@ -68,20 +68,19 @@ description: Some features which are usually asked in the interview
 * [GIT](git.md)
 * [Apple Carplay](apple-carplay.md)
 * [ADS with app ios](monetization/ads-analytics.md)
-
-* [iOS System Frameworks](ios-system-frameworks/README.md)
-* [Apple Watch Development](apple-watch/README.md)
-* [Monetization](monetization/README.md)
-* [Testing, Performance và Release](production/README.md)
-* [Cross-platform Development](cross-platform/README.md)
+* [iOS System Frameworks](ios-system-frameworks/)
+* [Apple Watch Development](apple-watch/)
+* [Monetization](monetization/)
+* [Testing, Performance và Release](production/)
+* [Cross-platform Development](cross-platform/)
 
 ### Hướng dẫn học
 
-Mỗi bài tập trung định nghĩa, cơ chế hoạt động, ví dụ minh họa, lưu ý và Q&A.
+Mỗi bài tập trung định nghĩa, cơ chế hoạt động, ví dụ minh họa, lưu ý và Q\&A.
 
 ## Câu hỏi ôn tập tổng quan
 
-**Q: Lộ trình ôn iOS Middle/Senior?** Swift/ARC/Concurrency → UIKit/SwiftUI → Architecture/DI → Networking/Storage → RxSwift/Combine → framework hệ thống/monetization → testing/performance/release. Đọc Q&A theo từng bài và làm bài tập thực hành.
+**Q: Lộ trình ôn iOS Middle/Senior?** Swift/ARC/Concurrency → UIKit/SwiftUI → Architecture/DI → Networking/Storage → RxSwift/Combine → framework hệ thống/monetization → testing/performance/release. Đọc Q\&A theo từng bài và làm bài tập thực hành.
 
 **Q: Khi trả lời tình huống kỹ thuật nên trình bày thế nào?** Định nghĩa và contract → mechanism → chọn giải pháp/trade-off → ví dụ code/edge cases → cách test/đo. Chỉ dùng kinh nghiệm/số liệu thực tế đã xác nhận.
 
