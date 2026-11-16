@@ -54,3 +54,100 @@ func decodeProduct(_ data: Data) throws -> Product {
 **Q: API thiếu field có nên dùng optional toàn bộ?** Không. Phân biệt field bắt buộc và field thực sự nullable; validate dữ liệu tại boundary.
 
 **Liên hệ:** DaPass/BIDU parse JSON; Map4D, Call ID và Watch Faces dùng model rõ ràng để mapping API sang domain.
+
+## Kiến thức chuyên sâu
+
+### Generic constraint, associatedtype và type erasure
+
+```swift
+protocol Repository {
+    associatedtype Entity: Identifiable
+    func fetch() async throws -> [Entity]
+}
+
+struct LoadItems<R: Repository> {
+    let repository: R
+
+    func execute() async throws -> [R.Entity] {
+        try await repository.fetch()
+    }
+}
+```
+
+Generic LoadItems giữ được quan hệ giữa Repository và Entity; compiler không cần cast. Khi cần lưu nhiều implementation khác concrete type, dùng protocol có primary associated type (Swift 5.7+) hoặc type erasure. Ví dụ:
+
+```swift
+struct AnyLoader<Item> {
+    private let load: () async throws -> [Item]
+
+    init(_ load: @escaping () async throws -> [Item]) {
+        self.load = load
+    }
+
+    func fetch() async throws -> [Item] { try await load() }
+}
+```
+
+Type erasure che concrete type nhưng vẫn giữ Item. Đổi lại có thêm abstraction, có thể có dynamic dispatch. Không cần ép mọi service thành generic nếu protocol thường đủ.
+
+### Codable: DTO khác Domain Model
+
+```swift
+import Foundation
+
+struct UserDTO: Decodable {
+    let userID: Int
+    let displayName: String?
+    let createdAt: Date
+
+    enum CodingKeys: String, CodingKey {
+        case userID = "user_id"
+        case displayName = "display_name"
+        case createdAt = "created_at"
+    }
+}
+
+struct User {
+    let id: Int
+    let name: String
+
+    init(dto: UserDTO) {
+        id = dto.userID
+        name = dto.displayName ?? "Unknown"
+    }
+}
+
+func parseUser(_ data: Data) throws -> User {
+    let decoder = JSONDecoder()
+    decoder.dateDecodingStrategy = .iso8601
+    return User(dto: try decoder.decode(UserDTO.self, from: data))
+}
+```
+
+DTO phản ánh server contract; Domain dùng kiểu và invariant của nghiệp vụ. Không đưa default 0/empty vào mọi field để che API lỗi. Khi API đổi kiểu Int thành String, xác nhận contract hoặc custom decoder có test rõ ràng. Khi decode lỗi, đọc DecodingError.keyNotFound/typeMismatch/valueNotFound/dataCorrupted và codingPath.
+
+### Copy-on-write và ARC
+
+```swift
+var original = [1, 2, 3]
+var copy = original
+copy.append(4) // original vẫn [1, 2, 3]
+
+final class Box { var value = 0 }
+struct Container { var box = Box() }
+
+let a = Container()
+let b = a
+b.box.value = 10
+print(a.box.value) // 10, reference được chia sẻ
+```
+
+Value semantics không đồng nghĩa deep copy reference bên trong. ARC quản lý class instance bằng reference count, không phải garbage collector. Closure escaping capture self có thể cycle nếu self giữ closure; weak optional không kéo lifetime, unowned giả định object còn sống và có thể crash nếu sai.
+
+### Q&A bổ sung
+
+**Q: any và some có thay thế nhau?** Không. some che một concrete type ổn định; any cho phép nhiều concrete type nhưng mất một số quan hệ kiểu.
+
+**Q: Codable và SwiftyJSON chọn gì?** API contract ổn định ưu tiên Codable; JSON động có thể dùng SwiftyJSON/JSONSerialization và validate tại boundary.
+
+**Bài tập:** Decode JSON có field optional, date sai format, field bắt buộc thiếu; assert lỗi. Viết generic repository và fake repository để test.

@@ -74,8 +74,7 @@ description: Some features which are usually asked in the interview
 * [Monetization](monetization/README.md)
 * [Testing, Performance và Release](production/README.md)
 * [Cross-platform Development](cross-platform/README.md)
-* [Project Deep Dive](project-deep-dive/README.md)
 
 ### Hướng dẫn học
 
-Mỗi bài tập trung định nghĩa, cơ chế hoạt động, ví dụ minh họa, lưu ý và Q&A. Với Project Deep Dive, phân biệt kinh nghiệm đã ghi trong CV và kiến trúc tham khảo; xác nhận SDK/version và số liệu thực tế trước phỏng vấn.
+Mỗi bài tập trung định nghĩa, cơ chế hoạt động, ví dụ minh họa, lưu ý và Q&A.

@@ -48,3 +48,75 @@ Cần NSCameraUsageDescription, request permission; cấu hình/startRunning/sto
 **Q: QR được scan 2 lần?** Client debounce không đủ; backend transaction/idempotency bảo đảm voucher chỉ redeem một lần.
 
 **Liên hệ:** DaPass – social login, VNPay/Visa, QR voucher.
+
+## Payment và QR: thiết kế state machine
+
+### Payment state
+
+```text
+idle -> creatingOrder -> awaitingPayment -> verifying
+                                  -> paid / failed / expired / cancelled
+App restart -> query backend order -> render server state
+```
+
+Client callback chỉ là tín hiệu refresh; server webhook/IPN phải verify chữ ký, amount/currency, order ID, trạng thái và idempotency. Không cộng tiền/cấp voucher nhiều lần khi callback và webhook tới đồng thời. Visa là card network; dùng gateway/SDK hỗ trợ, không lưu PAN/CVV. Test sandbox trước production, không hardcode merchant secret.
+
+```swift
+enum PaymentState: Equatable {
+    case idle, pending(orderID: String), paid(orderID: String)
+    case failed(message: String)
+}
+
+struct OrderStatus: Decodable {
+    let id: String
+    let status: String
+}
+
+func paymentState(from status: OrderStatus) -> PaymentState {
+    switch status.status {
+    case "paid": return .paid(orderID: status.id)
+    case "pending": return .pending(orderID: status.id)
+    default: return .failed(message: "Payment not completed")
+    }
+}
+```
+
+Production dùng enum server contract và unknown state riêng, xử lý refund/expiry/cancel theo nghiệp vụ. Backend idempotency key ổn định mỗi checkout; app giữ pending order ID (không giữ card secret). Poll bounded, refresh on foreground; không retry charge POST nếu server không hỗ trợ idempotency.
+
+### Social login OAuth/OIDC
+
+Authorization Code + PKCE: app tạo verifier/challenge, mở ASWebAuthenticationSession, provider callback code + state, exchange code theo provider/backend, verify identity token issuer/audience/nonce/expiry. Không gửi password vào WebView tự dựng; tránh custom scheme hijack, ưu tiên provider-approved redirect. Access token ngắn hạn, refresh token bảo vệ Keychain, logout revoke. Sign in with Apple có identity token/authorizationCode, tên/email có thể chỉ cấp lần đầu; backend lưu account ID đúng.
+
+### QR redeem thực tế
+
+```swift
+import AVFoundation
+
+final class QRDelegate: NSObject, AVCaptureMetadataOutputObjectsDelegate {
+    var onCode: ((String) -> Void)?
+    private var processing = false
+
+    func metadataOutput(_ output: AVCaptureMetadataOutput,
+                        didOutput metadataObjects: [AVMetadataObject],
+                        from connection: AVCaptureConnection) {
+        guard !processing,
+              let object = metadataObjects.first as? AVMetadataMachineReadableCodeObject,
+              object.type == .qr,
+              let code = object.stringValue, !code.isEmpty else { return }
+        processing = true
+        onCode?(code)
+    }
+
+    func reset() { processing = false }
+}
+```
+
+Delegate queue main như ví dụ cấu hình trước, reset sau server response/retry. Capture session chạy serial queue, preview layer resize trên main, permission và interruption xử lý. Validate token format/length, không mở arbitrary URL hoặc thực thi nội dung QR. Backend redeem atomically, expiry, one-time token; client debounce chỉ giảm request lặp.
+
+**Q: Payment callback success có đủ?** Không, server verify là source of truth.
+
+**Q: OAuth vs authentication?** OAuth cấp quyền, OIDC thêm identity; validate token và server session.
+
+**Q: Camera permission denied?** Giải thích và hướng dẫn Settings, fallback manual code nếu nghiệp vụ cho phép.
+
+**Bài tập:** Mock order pending→paid, callback duplicate, app restart, QR repeated frames và redeem already used.

@@ -48,3 +48,133 @@ func nonNegativeCount(count: Int) {
 **Q: Test race condition?** Controlled scheduler/clock, nhiều task, assertion invariant; chạy Thread Sanitizer khi phù hợp.
 
 **Liên hệ:** Map4D search, FastVPN speed math/state, StoreKit entitlement, Call ID spam normalization, Watch Faces sync dedup.
+
+## Testing chuyên sâu: từ unit test đến integration và UI test
+
+### Test Pyramid và phạm vi
+
+Unit test kiểm tra một đơn vị logic nhanh, isolated; integration test kiểm tra phối hợp nhiều thành phần thật (DB/API client với stub transport); UI test chạy app và thao tác qua accessibility. Không dùng UI test cho mọi edge case vì chậm và flaky. Test behavior, không test private implementation. Coverage là tín hiệu thiếu test, không bảo đảm test chất lượng.
+
+### Fake Repository và async XCTest
+
+```swift
+import XCTest
+
+struct Product: Equatable, Sendable {
+    let id: Int
+    let name: String
+}
+
+protocol ProductRepository: Sendable {
+    func fetch() async throws -> [Product]
+}
+
+struct FakeRepository: ProductRepository {
+    let result: Result<[Product], TestError>
+    func fetch() async throws -> [Product] { try result.get() }
+}
+
+enum TestError: Error { case offline }
+
+@MainActor
+final class ProductViewModel {
+    enum State: Equatable {
+        case idle, loading, loaded([Product]), failed
+    }
+    private(set) var state: State = .idle
+    private let repository: any ProductRepository
+
+    init(repository: any ProductRepository) {
+        self.repository = repository
+    }
+
+    func load() async {
+        state = .loading
+        do {
+            let items = try await repository.fetch()
+            try Task.checkCancellation()
+            state = .loaded(items)
+        } catch is CancellationError {
+            state = .idle
+        } catch {
+            state = .failed
+        }
+    }
+}
+
+final class ProductViewModelTests: XCTestCase {
+    @MainActor
+    func testLoadSuccess() async {
+        let products = [Product(id: 1, name: "Coffee")]
+        let sut = ProductViewModel(repository: FakeRepository(
+            result: .success(products)
+        ))
+        await sut.load()
+        XCTAssertEqual(sut.state, .loaded(products))
+    }
+
+    @MainActor
+    func testLoadFailure() async {
+        let sut = ProductViewModel(repository: FakeRepository(
+            result: .failure(.offline)
+        ))
+        await sut.load()
+        XCTAssertEqual(sut.state, .failed)
+    }
+}
+```
+
+Ví dụ standalone để học; production đưa Product/ViewModel vào app module, test target dùng @testable import. Arrange/Act/Assert rõ ràng. Fake trả data/error deterministic; mock verify interaction (ví dụ repository gọi đúng một lần); spy ghi lại calls. Stub cung cấp response cố định. Không mock mọi type: domain logic thuần test trực tiếp.
+
+### XCTest vs Swift Testing
+
+| Tiêu chí | XCTest | Swift Testing |
+| --- | --- | --- |
+| Khai báo | XCTestCase/test method | @Suite, @Test |
+| Assert | XCTAssertEqual | #expect |
+| Async | async test/expectation | async test, confirmation |
+| Parameterized | Loop/helper | @Test(arguments:) |
+| UI test | XCUITest | Tiếp tục dùng XCUITest |
+
+```swift
+import Testing
+
+@Test(arguments: [0, 1, 10])
+func speedIsNonNegative(bytes: Int) {
+    let mbps = Double(bytes) * 8 / 1_000_000
+    #expect(mbps >= 0)
+}
+```
+
+Swift Testing từ Xcode 16/Swift 6 toolchain; kiểm tra target support. Không dùng sleep ngẫu nhiên để chờ event. Inject clock/scheduler; XCTest expectation.fulfillment(of:timeout:) cho callback async. Test cancellation bằng task và controllable fake, assert state cuối.
+
+### Integration test API và persistence
+
+URLProtocol subclass có thể intercept URLSessionConfiguration.ephemeral.protocolClasses để trả HTTPURLResponse/data/error fixture. Test 200/204/401/429/500, malformed JSON, retry cap, cancellation. Không global stub mutable không đồng bộ khi test parallel; dùng per-test session/handler có isolation. Core Data dùng in-memory store cho CRUD, temporary SQLite để test migration thật. StoreKit Configuration/StoreKitTest cho purchase/renewal; simulator không thay device test extension/VPN/watch.
+
+### XCUITest
+
+```swift
+import XCTest
+
+final class LoginUITests: XCTestCase {
+    func testLoginForm() {
+        let app = XCUIApplication()
+        app.launchArguments = ["-uiTesting", "-useFakeBackend"]
+        app.launch()
+        let email = app.textFields["login.email"]
+        XCTAssertTrue(email.waitForExistence(timeout: 5))
+        email.tap()
+        email.typeText("test@example.com")
+        XCTAssertTrue(app.buttons["login.submit"].exists)
+    }
+}
+```
+
+App test build phải hỗ trợ launch arguments và accessibilityIdentifier; fake backend chỉ test configuration, không vô hiệu security production. waitForExistence thay sleep, test accessibility IDs thay text localization. Reset state giữa tests. Test matrix iOS/device/language/permission/offline.
+
+**Q: Test async API không chờ mạng thật?** Inject repository/transport; URLProtocol fixture, fake clock.
+
+**Q: Unit test vs UI test?** Unit nhanh và isolated, UI test end-to-end user flow; bổ sung integration ở boundary.
+
+**Bài tập:** Viết test success/empty/failure/cancel cho ViewModel, test pagination duplicate và 401 refresh single-flight.
