@@ -64,3 +64,48 @@ Info.plist cần NSLocationWhenInUseUsageDescription; Always chỉ khi feature t
 **Q: Camera pan tạo nhiều request?** Debounce camera idle, distinct viewport, cancel request cũ, cache/dedup marker.
 
 **Liên hệ:** Map4D, Karaoke nearby notification, DaPass gợi ý cafe.
+
+## CoreLocation chuyên sâu
+
+### Permission, accuracy và lifecycle
+
+Authorization WhenInUse/Always khác accuracy full/reduced. Không xin Always ngay khi app chỉ cần nearby. Info.plist purpose string rõ; denied hướng dẫn Settings và fallback manual search. iOS background location có điều kiện capability/authorization và system policy; stop khi không cần. CLLocation có timestamp, horizontalAccuracy; accuracy âm là invalid.
+
+```swift
+import CoreLocation
+
+func isUsable(_ location: CLLocation,
+              maxAge: TimeInterval = 30,
+              maxAccuracy: CLLocationAccuracy = 100) -> Bool {
+    location.horizontalAccuracy >= 0 &&
+    location.horizontalAccuracy <= maxAccuracy &&
+    abs(location.timestamp.timeIntervalSinceNow) <= maxAge
+}
+
+func distance(from a: CLLocationCoordinate2D,
+              to b: CLLocationCoordinate2D) -> CLLocationDistance {
+    CLLocation(latitude: a.latitude, longitude: a.longitude)
+        .distance(from: CLLocation(latitude: b.latitude, longitude: b.longitude))
+}
+```
+
+distance là đường thẳng địa lý, không phải road distance/ETA. desiredAccuracy và distanceFilter là hint, không bảo đảm callback đúng interval. requestLocation một lần; startUpdatingLocation liên tục; significant-change/region monitoring phù hợp nhu cầu tiết kiệm pin tùy OS và permission. CLGeocoder reverseGeocodeLocation có async/callback; tránh gọi mỗi location update, cache/debounce.
+
+### Map rendering và viewport
+
+```text
+Camera gesture -> camera idle/debounce -> viewport bounds
+-> search API -> map DTO -> diff marker IDs -> render
+```
+
+Camera center/zoom/bearing/tilt; marker là point, polyline route là chuỗi tọa độ, polygon area. Clustering theo zoom/viewport giảm marker. Không render toàn bộ dataset nếu chỉ thấy một vùng. Map4D SDK API phụ thuộc version, dùng adapter để domain không phụ thuộc SDK. Route API có start/end/waypoints, travel mode, traffic; ETA là estimate. Cache theo tile/viewport/version, tôn trọng license.
+
+### Q&A bổ sung
+
+**Q: Accuracy tốt nhất có nên dùng luôn?** Không, tốn pin; chọn theo feature, stopUpdates khi không cần.
+
+**Q: Geofence và push notification khác nhau?** Region monitoring phát event vị trí theo hệ thống; push là server gửi APNs. Có thể kết hợp nhưng không đảm bảo thời điểm chính xác.
+
+**Q: Map search sai sau pan nhanh?** Cancel/ignore stale result theo query generation; debounce camera idle, diff marker ID.
+
+**Bài tập:** Mock location provider, test denied/reduced/stale, tính khoảng cách 2 điểm, debounce viewport search.

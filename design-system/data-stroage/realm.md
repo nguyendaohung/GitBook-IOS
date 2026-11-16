@@ -37,3 +37,47 @@ func saveFavorite(id: String, title: String) throws {
 **Q: Có truyền object Realm qua background thread không?** Không truyền managed live object tùy ý; resolve tại thread/actor đích.
 
 Realm là kiến thức nền trong GitBook; CV không ghi dự án nào dùng Realm.
+
+## Realm CRUD và reactive query
+
+```swift
+import RealmSwift
+
+func favoriteTitles(search: String) throws -> [String] {
+    let realm = try Realm()
+    let results = realm.objects(Favorite.self)
+        .filter("title CONTAINS[c] %@", search)
+        .sorted(byKeyPath: "title")
+    return results.map(\.title)
+}
+
+func removeFavorite(id: String) throws {
+    let realm = try Realm()
+    guard let item = realm.object(ofType: Favorite.self, forPrimaryKey: id) else {
+        return
+    }
+    try realm.write { realm.delete(item) }
+}
+```
+
+Results là live collection, không phải array snapshot. Observe collection notification để nhận initial/update/error, giữ NotificationToken; invalidate khi màn hình không còn quan sát. Không giữ object đã bị delete; check isInvalidated khi cần. Transaction write atomic trong Realm, không mutate managed object ngoài write transaction.
+
+### Migration và thread safety
+
+```swift
+var configuration = Realm.Configuration.defaultConfiguration
+configuration.schemaVersion = 2
+configuration.migrationBlock = { migration, oldVersion in
+    if oldVersion < 2 {
+        // Minh họa rename một field khi schema v2 đã đổi tên.
+        migration.renameProperty(onType: "Favorite", from: "name", to: "title")
+    }
+}
+Realm.Configuration.defaultConfiguration = configuration
+```
+
+Chỉ dùng rename nếu schema v1 thật sự có name và v2 có title; test file cũ trước release. ThreadSafeReference resolve một lần tại Realm đích; frozen object đọc snapshot, không mutate; thaw nếu phù hợp. Prefer chuyển primary key/value DTO qua concurrency boundary.
+
+**Q: Realm nhanh hơn Core Data?** Không mặc định. Benchmark workload, query/index, object graph, writes, migration, memory và dependency maintenance.
+
+**Bài tập:** CRUD favorites, observe thay đổi, migration v1→v2, test duplicate primary key và background query.

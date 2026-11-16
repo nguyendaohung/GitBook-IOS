@@ -72,3 +72,67 @@ Giữ instance sống theo lifecycle; delegate callback không mặc định mai
 **Liên hệ:** Watch Faces – content sync.
 
 [WatchConnectivity](https://developer.apple.com/documentation/watchconnectivity)
+
+## WatchConnectivity chuyên sâu
+
+### Session lifecycle và interactive message
+
+Activation asynchronous; iOS có thể inactive/deactivated khi đổi watch, phải activate lại. isPaired/isWatchAppInstalled chỉ iOS; reachable có thể đổi bất kỳ lúc nào. Background transfer không cần reachable nhưng không đảm bảo deadline.
+
+```swift
+import WatchConnectivity
+
+func sendSelection(id: String,
+                   onReply: @escaping ([String: Any]) -> Void,
+                   onError: @escaping (Error) -> Void) {
+    let session = WCSession.default
+    guard session.activationState == .activated, session.isReachable else {
+        onError(NSError(domain: "WatchSync", code: 1))
+        return
+    }
+    session.sendMessage(["type": "select", "id": id],
+                        replyHandler: onReply, errorHandler: onError)
+}
+```
+
+Reachability có thể đổi sau guard; luôn xử lý errorHandler. Receiver implement didReceiveMessage với replyHandler, reply đúng một lần. Nếu action cần giao sau, queue userInfo với event ID; không gửi cả hai đường mà thiếu dedup.
+
+### Latest snapshot vs event queue
+
+```swift
+import Foundation
+
+struct FavoritesSnapshot: Codable {
+    let version: Int
+    let ids: [String]
+}
+
+func updateFavorites(_ snapshot: FavoritesSnapshot) throws {
+    let data = try JSONEncoder().encode(snapshot)
+    try WCSession.default.updateApplicationContext(["snapshot": data])
+}
+```
+
+Dictionary dùng property-list compatible types, Data Codable có schema rõ. Receiver decode/validate và ignore stale version. Version chỉ đủ nếu có authority thống nhất; multi-writer cần conflict policy, ví dụ server revision/merge. Application context latest state, không dùng cho event increment. transferUserInfo phù hợp event có UUID, persist dedup/idempotent apply.
+
+### File transfer
+
+```swift
+func queueImageFile(url: URL, assetID: String) {
+    WCSession.default.transferFile(url, metadata: ["assetID": assetID])
+}
+```
+
+Receiver didReceive file phải copy/move khỏi temporary URL trước callback return, validate file size/type, map metadata ID sang safe path. Không dùng path do metadata cung cấp tùy ý. didFinish fileTransfer:error theo dõi lỗi/retry; outstanding transfers/cancel theo lifetime. Downsample trước khi transfer để giảm memory/storage/pin. Delegate callback không mặc định main, chuyển UI update về main actor.
+
+### So sánh REST và WCSession
+
+WCSession sync giữa companion devices, không thay backend cho nhiều user/device. REST giữ catalog/entitlement authoritative; local sync tối ưu UX/offline. Watch app independent có thể có network riêng. Không gửi receipt/token nếu không cần.
+
+**Q: transferUserInfo có giao ngay khi offline?** Không, queue và system giao khi có điều kiện, không guarantee thời điểm.
+
+**Q: Có gửi UIImage trong dictionary?** Không trực tiếp; property-list types, Data nhỏ hoặc transferFile.
+
+**Q: Duplicate khi retry?** Event ID, persist dedup, idempotent apply và version.
+
+**Bài tập:** Sync favorites context, event userInfo và thumbnail file; test offline, đổi watch, duplicate, stale version.

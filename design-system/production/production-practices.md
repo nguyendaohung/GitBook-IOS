@@ -31,3 +31,49 @@ GitHub Copilot, ChatGPT, Claude, Cursor hỗ trợ draft code, test, refactor, d
 **Q: AI sinh code có thể merge ngay?** Không; review correctness, license/privacy, test và verify API.
 
 **Liên hệ:** FoxCode localization, AI-assisted workflow, production maintenance; tất cả dự án có privacy/security boundary.
+
+## Production practices chuyên sâu
+
+### Localization và accessibility
+
+String Catalog (.xcstrings) quản lý translation/pluralization; legacy .strings/.stringsdict nếu target cần. Không nối câu từ nhiều literal vì ngữ pháp khác nhau. Dùng format localized number/date/currency, locale/time zone rõ ràng. Key có context, translator comment; fallback language. Test text dài, RTL, Dynamic Type, VoiceOver, contrast.
+
+```swift
+import Foundation
+
+func remainingItems(_ count: Int) -> String {
+    String(localized: "You have \(count) items",
+           comment: "Number of items remaining")
+}
+```
+
+Configure plural variants trong String Catalog; ví dụ không tự xử lý plural bằng if count == 1 cho mọi ngôn ngữ. Giá StoreKit dùng Product.displayPrice, không format currency bằng hardcoded USD.
+
+```swift
+import SwiftUI
+
+struct StatusRow: View {
+    let connected: Bool
+    var body: some View {
+        Label(connected ? "Connected" : "Disconnected",
+              systemImage: connected ? "checkmark.circle" : "xmark.circle")
+            .accessibilityLabel(connected ? "VPN connected" : "VPN disconnected")
+    }
+}
+```
+
+Không dựa chỉ màu xanh/đỏ cho state. UIKit dùng accessibilityLabel/value/traits, preferredFont(forTextStyle:), adjustsFontForContentSizeCategory.
+
+### Security boundary
+
+Client không đáng tin: backend authorize từng resource, validate order/amount/entitlement, idempotency, rate limit. HTTPS/ATS, trust validation mặc định; pinning thêm ràng buộc khi threat model cần và rotation/backup pins. Không disable certificate check để fix dev. Keychain cho token, App Groups file protection cho shared data, không lưu SMS/phone/photo không cần thiết. Secure logging redact secrets; avoid clipboard/token deep link. Dependency audit, privacy manifest, ATT/consent và App Store labels khác nhau.
+
+### AI-assisted workflow có kiểm soát
+
+Đưa context tối thiểu: deployment target, architecture, rule style, acceptance criteria, test cases. Yêu cầu AI giải thích trade-off, không gửi secret/client data/code không được phép. Review generated code, xác minh Apple API/version, compile, run tests, profile. Kiểm tra hallucinated API, race, retain cycle, license/security. Không dùng AI output thay bằng chứng kinh nghiệm.
+
+**Q: Tại sao không hardcode API secret?** App binary có thể inspect; secret ở backend/CI secret store, client dùng short-lived credentials.
+
+**Q: ATT denied có nghĩa không analytics?** Không đồng nhất; tracking theo Apple definition cần permission, first-party analytics vẫn phải tuân privacy/consent.
+
+**Bài tập:** Review một API client có log token/skip trust và sửa; localize screen với plural/RTL, test VoiceOver.

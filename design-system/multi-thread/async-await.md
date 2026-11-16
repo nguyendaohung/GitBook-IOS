@@ -35,3 +35,80 @@ Trong ví dụ này, chúng ta sử dụng các hàm `fetchDataTask1()`, `fetchD
 ### Kiến thức mở rộng
 
 Xem [Swift Concurrency: Task, Actor, Sendable](structured-concurrency.md) để hiểu structured concurrency, cancellation và data-race safety. Dùng async let/TaskGroup để chạy child tasks đồng thời; await từng hàm theo thứ tự không tự tạo parallelism.
+
+## Async/Await chuyên sâu: hiểu đúng suspension và concurrency
+
+async biểu diễn hàm có thể suspend; await đánh dấu điểm có thể tạm dừng. Không có nghĩa tạo thread mới hoặc luôn background. Executor/actor isolation quyết định nơi chạy. Một async function CPU-bound vẫn có thể block actor hiện tại. URLSession async API suspend trong khi chờ network; khi có kết quả, task resume theo isolation.
+
+### Sequential vs parallel
+
+```swift
+import Foundation
+
+func sequential(a: URL, b: URL) async throws -> (Data, Data) {
+    let first = try await URLSession.shared.data(from: a).0
+    let second = try await URLSession.shared.data(from: b).0
+    return (first, second)
+}
+
+func parallel(a: URL, b: URL) async throws -> (Data, Data) {
+    async let first = URLSession.shared.data(from: a).0
+    async let second = URLSession.shared.data(from: b).0
+    return try await (first, second)
+}
+```
+
+Sequential cần kết quả A trước B hoặc dependency. async let tạo child tasks có structured lifetime, cho phép hai request đồng thời. Không bảo đảm thời gian bằng đúng max(A,B), còn scheduling/network limits. Ví dụ chỉ lấy Data; production validate HTTP status/decode. URLSession async API iOS 15+.
+
+### Error, cancellation và main actor
+
+```swift
+@MainActor
+final class ScreenModel {
+    private(set) var title = ""
+    private var task: Task<Void, Never>?
+
+    func load(fetch: @escaping @Sendable () async throws -> String) {
+        task?.cancel()
+        task = Task { [weak self] in
+            do {
+                let value = try await fetch()
+                try Task.checkCancellation()
+                self?.title = value
+            } catch is CancellationError {
+                // Expected when screen/query changes.
+            } catch {
+                guard !Task.isCancelled else { return }
+                self?.title = "Failed"
+            }
+        }
+    }
+
+    func stop() {
+        task?.cancel()
+        task = nil
+    }
+}
+```
+
+Task {} kế thừa actor context khi tạo trong MainActor; fetch nonisolated async/actor service theo isolation rules, không giả định Task tự chạy CPU-heavy background. Cancellation cooperative, check trước side effect/update UI; Task.sleep/URLSession thường hỗ trợ cancellation. Task.detached không kế thừa actor context/lifetime, không dùng chỉ để "đẩy background" tùy ý.
+
+### Callback → async
+
+```swift
+func legacyBridge<T>(
+    _ start: (@escaping (Result<T, Error>) -> Void) -> Void
+) async throws -> T {
+    try await withCheckedThrowingContinuation { continuation in
+        start { continuation.resume(with: $0) }
+    }
+}
+```
+
+Callback phải hoàn tất đúng một lần; continuation không tự cancel/timeout legacy API. Dùng withTaskCancellationHandler và synchronized cancellation handle nếu cần. Xem [Swift Concurrency](structured-concurrency.md) về TaskGroup, Actor, Sendable và reentrancy.
+
+**Q: await có block thread không?** Suspension có thể nhường executor/thread; synchronous work bên trong vẫn block.
+
+**Q: async let và Task {} khác?** async let child task có structured scope; Task {} unstructured, owner phải quản lý handle/lifetime.
+
+**Bài tập:** So sánh sequential/parallel fetch, cancel khi query thay đổi, test stale result và error.

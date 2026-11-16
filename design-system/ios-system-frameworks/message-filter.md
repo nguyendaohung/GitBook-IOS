@@ -40,3 +40,51 @@ final class MessageFilterExtension: ILMessageFilterExtension,
 **Liên hệ:** Call ID – SMS filtering và spam data.
 
 [IdentityLookup - Apple](https://developer.apple.com/documentation/identitylookup)
+
+## Message Filter: classifier và privacy
+
+### Flow
+
+```text
+System nhận message đủ điều kiện -> Extension query sender/body
+-> rule/model local -> allow/junk/none
+-> nếu cần: system-mediated network deferral -> response -> completion
+```
+
+Không phải Notification Service Extension. SMS filter nhận message query do hệ thống cung cấp, không sửa/xóa tin nhắn hay xem lịch sử. Action .none khi không đủ bằng chứng. Hệ thống/OS quyết định supported category, kiểm tra API availability trước dùng.
+
+```swift
+enum MessageDecision {
+    case allow, junk, unknown
+}
+
+struct MessageClassifier {
+    let trustedSenders: Set<String>
+    let blockedSenders: Set<String>
+
+    func classify(sender: String?, body: String?) -> MessageDecision {
+        guard let sender, !sender.isEmpty else { return .unknown }
+        if trustedSenders.contains(sender) { return .allow }
+        if blockedSenders.contains(sender) { return .junk }
+        // Không block chỉ vì một từ chung như "payment".
+        guard let body, !body.isEmpty else { return .unknown }
+        return .unknown
+    }
+}
+```
+
+Pure classifier dễ unit test. Production normalize sender (có thể alpha sender ID), language/Unicode, rule precedence, version, false-positive cost. Không tự thu thập nội dung nhạy cảm; shared snapshot chỉ chứa rule cần thiết.
+
+### App Group và network deferral
+
+Bật App Groups ở hai target, cùng group identifier; data file atomically ghi, extension validate schema/version và fallback nếu thiếu/corrupt. Extension không có quyền đọc UserDefaults.standard của app. Nếu local chưa quyết định, ILMessageFilterExtensionContext.deferQueryRequestToNetwork cho system gửi query tới endpoint đã cấu hình theo Apple, completion parse response/error, fallback .none. Không tự gọi URLSession gửi SMS tùy ý. Kiểm tra privacy disclosure và domain association theo OS.
+
+### Q&A bổ sung
+
+**Q: Filter spam và chặn sender có giống nhau?** Filter phân loại message, không tự chặn mọi message hay xóa lịch sử.
+
+**Q: Offline khi rule không đủ?** Fallback .none, không block nhầm; giữ snapshot last-known-good.
+
+**Q: Completion bị gọi hai lần?** Vi phạm contract; thiết kế một đường hoàn tất duy nhất kể cả network error/timeout.
+
+**Bài tập:** Test classifier trusted/blocked/unknown, sender nil, Unicode, rule conflict; test extension disabled và snapshot corrupt trên device.

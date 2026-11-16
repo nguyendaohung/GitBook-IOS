@@ -42,3 +42,73 @@ Không log access token, SMS, số điện thoại hay dữ liệu thanh toán. 
 **Q: Crash production không reproduce?** Symbolicate, phân nhóm OS/version/device, tìm pattern, thêm log an toàn, tạo regression test.
 
 **Liên hệ:** BIDU scrolling/Texture, Watch Faces ảnh lớn, Map4D rendering, Call ID extension memory, FastVPN test transfer.
+
+## Performance và debugging chuyên sâu
+
+### Quy trình đo lường
+
+1. Reproduce trên device thật/release build phù hợp; ghi iOS version, data size, steps.
+2. Chọn metric: cold/warm launch, frame hitch, peak memory, CPU, network elapsed/p95, energy, crash rate.
+3. Capture baseline bằng Instruments/Xcode Organizer; tìm bottleneck bằng call stack/allocations/metrics.
+4. Sửa một nguyên nhân, đo lại cùng workload, kiểm tra regression và trade-off.
+
+Không kết luận tối ưu chỉ từ cảm giác hoặc simulator; không tự gán số liệu cải thiện khi chưa đo.
+
+### Main thread, scrolling và layout
+
+60Hz có khoảng 16.7ms mỗi frame, 120Hz khoảng 8.3ms; đây là tổng frame budget, app không sở hữu toàn bộ thời gian. Main thread bận sync I/O, JSON decode, image decode, layout repeated, expensive cell configuration gây hitch. Time Profiler tìm hot stack; Animation Hitches/Core Animation phân tích frame; System Trace xem thread scheduling. Giảm data work trên main, downsample ảnh, stable cell IDs, pagination và prefetch bounded.
+
+### Memory: leak vs growth vs spike
+
+Leak: object không giải phóng vì retain cycle; growth: cache/store tăng dần; spike: decode ảnh/file lớn tạm thời. Memory Graph xem retain path; Allocations mark generation và compare persistent bytes; Leaks hỗ trợ tìm memory leak nhưng không phát hiện mọi logical retain.
+
+```swift
+final class Loader {
+    var onFinish: (() -> Void)?
+    func start() {
+        onFinish = { [weak self] in
+            self?.render()
+        }
+    }
+    func render() {}
+    deinit { print("Loader deinit") }
+}
+```
+
+self giữ closure, closure capture self mạnh tạo cycle. weak tránh cycle nhưng không dùng weak tùy tiện nếu task cần owner sống. Timer, NotificationCenter block observer, CADisplayLink, Combine/Rx subscriptions và Task lâu dài cần lifetime/cleanup rõ. Task cancellation cooperative; view biến mất không tự cancel mọi Task.
+
+### Signpost và logging
+
+```swift
+import os
+
+let signposter = OSSignposter(subsystem: "com.example.app", category: "loading")
+
+func measureLoad<T>(_ work: () throws -> T) rethrows -> T {
+    let state = signposter.beginInterval("LoadCatalog")
+    defer { signposter.endInterval("LoadCatalog", state) }
+    return try work()
+}
+```
+
+Dùng iOS 15+ và Instruments Points of Interest/OS signpost để đo interval, không log PII/token. Logger structured privacy, correlation ID không chứa user data. URLSessionTaskMetrics phân tích network phases; cache/connection reuse ảnh hưởng metrics.
+
+### Production crash investigation
+
+Crash report cần đúng build/architecture/dSYM UUID để symbolicate. Xem exception type, crashed thread, stack, OS/device, release version; nhóm crash theo signature. EXC_BAD_ACCESS có thể dangling pointer/unsafe memory; SIGABRT có thể assertion/uncaught exception; watchdog có thể app unresponsive; jetsam do memory pressure không luôn có crash stack. Dùng Xcode Organizer/Crashlytics nếu SDK thật, không khẳng định SDK đã dùng. MetricKit cung cấp diagnostics/metrics tùy OS; không guarantee real-time.
+
+| Công cụ | Khi dùng |
+| --- | --- |
+| Time Profiler | CPU/hot functions |
+| Allocations/Leaks | Memory growth/leak |
+| Memory Graph | Retain paths |
+| Main Thread Checker | UIKit API sai thread |
+| Thread Sanitizer | Data race trong môi trường hỗ trợ |
+| Address Sanitizer | Memory corruption/use-after-free |
+| LLDB | Breakpoint, inspect variables, symbolic breakpoint |
+
+**Q: ARC có tự xử lý retain cycle?** Không, strong cycle giữ count khác 0; sửa ownership/capture.
+
+**Q: App lag nhưng CPU thấp?** Có thể main blocked I/O/lock, GPU rendering hoặc scheduling; dùng trace/frame metrics.
+
+**Bài tập:** Gallery ảnh lớn đo peak memory trước/sau downsample; tạo retain cycle và sửa bằng Memory Graph; profile một API + JSON decode.

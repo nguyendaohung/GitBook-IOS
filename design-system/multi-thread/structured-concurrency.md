@@ -76,3 +76,105 @@ final class SearchViewModel {
 **Q: Search API trả kết quả cũ sau query mới?** Cancel task cũ, kiểm tra cancellation hoặc request generation trước update state.
 
 **Liên hệ:** FastVPN hủy speed test, Watch Faces tải ảnh, Call ID cập nhật dữ liệu spam.
+
+## Structured concurrency thực hành
+
+### Chạy song song và giới hạn concurrency
+
+```swift
+import Foundation
+
+func fetchAll(_ urls: [URL]) async throws -> [Data] {
+    try await withThrowingTaskGroup(of: (Int, Data).self) { group in
+        let limit = 4
+        var results = Array<Data?>(repeating: nil, count: urls.count)
+
+        for index in 0..<min(limit, urls.count) {
+            group.addTask {
+                let (data, response) = try await URLSession.shared.data(from: urls[index])
+                guard let http = response as? HTTPURLResponse,
+                      (200..<300).contains(http.statusCode) else {
+                    throw URLError(.badServerResponse)
+                }
+                return (index, data)
+            }
+        }
+
+        var next = min(limit, urls.count)
+        while let (index, data) = try await group.next() {
+            results[index] = data
+            if next < urls.count {
+                let index = next
+                next += 1
+                group.addTask {
+                    let (data, response) = try await URLSession.shared.data(from: urls[index])
+                    guard let http = response as? HTTPURLResponse,
+                          (200..<300).contains(http.statusCode) else {
+                        throw URLError(.badServerResponse)
+                    }
+                    return (index, data)
+                }
+            }
+        }
+        return results.compactMap { $0 }
+    }
+}
+```
+
+TaskGroup tối đa bốn request đang thực thi, giữ kết quả theo index gốc. Throw thoát scope sẽ yêu cầu cancel child task và đợi child kết thúc; không dùng cho toàn bộ ảnh lớn nếu cần streaming/file cache. TaskGroup không tự giới hạn concurrency khi addTask hàng loạt.
+
+### Actor reentrancy và single-flight refresh
+
+Actor serialize các đoạn không suspend, nhưng qua await task khác có thể vào actor. Ví dụ token hết hạn: hai request cùng gọi refresh, nếu chỉ kiểm tra token trước await có thể tạo hai network calls.
+
+```swift
+actor RefreshGate {
+    private var inFlight: Task<String, Error>?
+
+    func refresh(using work: @escaping @Sendable () async throws -> String)
+        async throws -> String {
+        if let existing = inFlight { return try await existing.value }
+        let task = Task { try await work() }
+        inFlight = task
+        defer { inFlight = nil }
+        return try await task.value
+    }
+}
+```
+
+Shared refresh task có lifetime do gate sở hữu; một caller cancel không nên hủy refresh cho tất cả callers. Logout cần thiết kế session generation, hủy in-flight và chặn token cũ ghi vào session mới. Actor không đảm bảo fairness hay tránh mọi logical race.
+
+### Continuation và callback cũ
+
+```swift
+func bridge(_ start: (@escaping (Result<Data, Error>) -> Void) -> Void)
+    async throws -> Data {
+    try await withCheckedThrowingContinuation { continuation in
+        start { result in continuation.resume(with: result) }
+    }
+}
+```
+
+Callback phải gọi đúng một lần. Checked continuation hỗ trợ phát hiện misuse, không tự timeout/cancel callback API; khi cần cancellation dùng withTaskCancellationHandler và đồng bộ handle/token để tránh race giữa start và cancel. Không resume hai lần từ timeout và callback.
+
+### GCD vs OperationQueue vs Swift Concurrency
+
+| Công cụ | Phù hợp | Cancellation |
+| --- | --- | --- |
+| GCD | Queue thấp tầng, callback legacy | DispatchWorkItem cooperative |
+| OperationQueue | Dependency, maxConcurrentOperationCount | Operation.cancel, tự check flag |
+| async/await | Async API, flow dễ đọc | Task cancellation |
+| Actor | Shared mutable state | Không thay task cancellation |
+| TaskGroup | Child tasks có scope/lifetime | Propagate cooperative |
+
+Không gọi DispatchQueue.main.sync từ main queue (deadlock). Không dùng semaphore để chờ async network trên main/cooperative executor. CPU-bound lớn cần chia nhỏ hoặc executor phù hợp, đo UI responsiveness.
+
+### Q&A bổ sung
+
+**Q: async let tạo task lúc nào?** Khi khai báo, child thực thi đồng thời theo scheduler; scope chờ/cancel khi thoát.
+
+**Q: Task.detached có kế thừa MainActor?** Không. Chỉ dùng khi hiểu isolation/lifetime; vẫn phải chuyển UI update về MainActor.
+
+**Q: Sendable class được không?** Có nếu immutable/thread-safe hoặc actor; compiler kiểm tra theo rule. @unchecked Sendable là cam kết của developer.
+
+**Bài tập:** Viết search cancel cũ, task group tối đa 4 request, actor token refresh. Test cancellation và concurrent callers.

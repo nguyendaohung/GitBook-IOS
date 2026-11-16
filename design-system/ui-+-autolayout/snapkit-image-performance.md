@@ -68,3 +68,88 @@ ASDisplayNode, ASCellNode, ASTableNode/ASCollectionNode; layoutSpecThatFits xây
 **Q: News feed lag?** Dùng Time Profiler/Core Animation đo main-thread layout, image decode, offscreen rendering; pagination, downsample và async preparation.
 
 **Liên hệ:** BIDU Texture/Kingfisher; Map4D SnapKit; Watch Faces cache bộ sưu tập ảnh.
+
+## Layout và image pipeline chuyên sâu
+
+### UIKit Auto Layout thuần vs SnapKit
+
+```swift
+// UIKit native
+label.translatesAutoresizingMaskIntoConstraints = false
+NSLayoutConstraint.activate([
+    label.leadingAnchor.constraint(equalTo: view.leadingAnchor, constant: 16),
+    label.trailingAnchor.constraint(equalTo: view.trailingAnchor, constant: -16),
+    label.topAnchor.constraint(equalTo: view.safeAreaLayoutGuide.topAnchor,
+                               constant: 12)
+])
+// SnapKit tương đương (sau addSubview)
+label.snp.makeConstraints { make in
+    make.leading.trailing.equalToSuperview().inset(16)
+    make.top.equalTo(view.safeAreaLayoutGuide.snp.top).offset(12)
+}
+```
+
+Không chạy cả hai block cho cùng constraint. SnapKit giảm boilerplate, vẫn là NSLayoutConstraint, không nhanh hơn mặc định. Auto Layout giải hệ phương trình, required priority 1000; conflicting required constraints bị break, ambiguous layout thiếu ràng buộc. UIStackView giảm constraint tay, intrinsic content size của UILabel theo text/font. Hugging giữ không giãn, compression resistance giữ không co.
+
+```swift
+import SnapKit
+
+private var heightConstraint: Constraint?
+// Khi tạo layout:
+panel.snp.makeConstraints { make in
+    heightConstraint = make.height.equalTo(120).constraint
+}
+// Khi state đổi:
+heightConstraint?.update(offset: 240)
+UIView.animate(withDuration: 0.25) {
+    view.layoutIfNeeded()
+}
+```
+
+Đoạn minh họa nằm trong UIViewController với panel đã add vào hierarchy. Không gọi makeConstraints lặp trong layoutSubviews. remake khi đổi anchor quan hệ, update khi đổi constant. Animate layoutIfNeeded trên ancestor phù hợp.
+
+### Image pipeline
+
+```text
+URL + size/version -> memory cache -> disk cache -> network
+-> downsample/decode -> cache processed -> display nếu ID còn đúng
+```
+
+Ảnh 4000 x 3000 x 4 byte ~ 48 MB decoded; JPEG 2 MB không nói lên RAM. Downsample bằng ImageIO/Kingfisher processor trước display, size tính theo point x scale. Cache original và processed là trade-off disk/reprocessing; hạn mức memory/disk, TTL, clear khi logout nếu ảnh riêng tư. Dedup in-flight theo cache key. Placeholder/failure image, request cancel khi reuse/offscreen.
+
+### Collection view pagination và prefetch
+
+```swift
+import UIKit
+
+final class GalleryPrefetch: NSObject, UICollectionViewDataSourcePrefetching {
+    let start: (IndexPath) -> Void
+    let cancel: (IndexPath) -> Void
+
+    init(start: @escaping (IndexPath) -> Void,
+         cancel: @escaping (IndexPath) -> Void) {
+        self.start = start
+        self.cancel = cancel
+    }
+
+    func collectionView(_ collectionView: UICollectionView,
+                        prefetchItemsAt indexPaths: [IndexPath]) {
+        indexPaths.forEach(start)
+    }
+
+    func collectionView(_ collectionView: UICollectionView,
+                        cancelPrefetchingForItemsAt indexPaths: [IndexPath]) {
+        indexPaths.forEach(cancel)
+    }
+}
+```
+
+Controller map indexPath -> stable item ID từ snapshot hiện tại, giữ request theo ID, không assume indexPath ổn định khi insert/delete. Không cancel shared download nếu cell khác còn cần; reference count hoặc library quản lý. Diffable data source snapshot dùng ID unique, reconfigureItems để update content khi phù hợp. Pagination guard isLoading/hasMore, cursor và generation.
+
+### Q&A bổ sung
+
+**Q: Auto Layout priority 999 để làm gì?** Cho constraint gần required nhưng có đường thoát khi xung đột, ví dụ layout text Dynamic Type; không dùng để che lỗi layout.
+
+**Q: Prefetch và lazy loading khác nhau?** Prefetch chuẩn bị trước khi visible, lazy chỉ khi cần; giới hạn prefetch để không tăng memory/network.
+
+**Bài tập:** Gallery 200 ảnh, đo memory trước/sau downsample; tạo layout dynamic text bằng native và SnapKit, test landscape/Dynamic Type.

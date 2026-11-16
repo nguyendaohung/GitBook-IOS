@@ -53,3 +53,77 @@ Một counter cho một lần đo, tạo ngay trước resume, delegate queue se
 **Q: Tại sao speed không ổn định?** Endpoint, radio, congestion, TCP ramp-up, TLS, VPN route và sampling. Đo nhiều lần, báo phương pháp.
 
 **Liên hệ:** FastVPN download/upload/ping.
+
+## Speed Test: triển khai và kiểm tra chi tiết
+
+### Sampling và warm-up
+
+Instant speed = bytes tăng trong sample / duration sample. Average = tổng measured bytes / measured duration. Không lấy trung bình cộng speed sample có duration khác nhau. Dùng monotonic clock, loại warm-up theo phương pháp công bố. Nếu nhiều stream đồng thời, cộng bytes rồi chia cùng wall-clock elapsed, không cộng duration mỗi stream.
+
+```swift
+import Foundation
+
+struct TransferSample {
+    let bytes: Int64
+    let seconds: TimeInterval
+}
+
+func averageMbps(_ samples: [TransferSample]) -> Double? {
+    guard samples.allSatisfy({ $0.bytes >= 0 && $0.seconds > 0 }) else {
+        return nil
+    }
+    return megabitsPerSecond(bytes: samples.reduce(0) { $0 + $1.bytes },
+                             elapsed: samples.reduce(0) { $0 + $1.seconds })
+}
+```
+
+Ví dụ samples nối tiếp; production giới hạn byte cap tránh overflow. Server đủ bandwidth, cache policy phù hợp, tránh response nén làm sai interpretation; application bytes khác wire bytes. Endpoint và protocol phải ghi rõ.
+
+### Upload measurement
+
+```swift
+final class UploadProgress: NSObject, URLSessionTaskDelegate {
+    private let started = ProcessInfo.processInfo.systemUptime
+
+    func urlSession(_ session: URLSession, task: URLSessionTask,
+                    didSendBodyData bytesSent: Int64,
+                    totalBytesSent: Int64,
+                    totalBytesExpectedToSend: Int64) {
+        let elapsed = ProcessInfo.processInfo.systemUptime - started
+        if let mbps = megabitsPerSecond(bytes: totalBytesSent, elapsed: elapsed) {
+            print(mbps)
+        }
+    }
+}
+```
+
+Upload progress đo bytes client gửi, không chắc server nhận/commit; validate HTTP status và server response. Dùng file/stream thay vì allocate hàng trăm MB RAM, payload fixture không chứa dữ liệu cá nhân. Download đếm chunks bằng delegate hoặc async bytes, không giữ toàn bộ payload. Hủy task/session và dọn temporary file khi cancel.
+
+### HTTP latency
+
+```swift
+func httpLatency(url: URL) async throws -> TimeInterval {
+    var request = URLRequest(url: url)
+    request.httpMethod = "HEAD"
+    request.cachePolicy = .reloadIgnoringLocalCacheData
+    let start = ProcessInfo.processInfo.systemUptime
+    let (_, response) = try await URLSession.shared.data(for: request)
+    guard let http = response as? HTTPURLResponse,
+          (200..<300).contains(http.statusCode) else {
+        throw URLError(.badServerResponse)
+    }
+    return ProcessInfo.processInfo.systemUptime - start
+}
+```
+
+Endpoint phải hỗ trợ HEAD. HTTP elapsed có thể gồm DNS/TCP/TLS/server overhead, không phải ICMP RTT. URLSessionTaskMetrics tách phase DNS/connect/TLS/request/response, phase có thể nil khi reuse connection. Đo nhiều samples, median/p95; jitter là variation theo phương pháp, HTTP failure không đồng nghĩa packet loss.
+
+### State machine và UX
+
+Idle → latency → download → upload → result; error/cancel bất kỳ bước. Run ID chặn callback cũ ghi đè run mới; throttle progress, UI main actor. Path/VPN đổi giữa test: báo mixed hoặc restart theo policy. Cảnh báo data usage, giới hạn duration/bytes, xử lý Low Data Mode. Test fake clock/transport, interrupted connection, zero duration, stale callback.
+
+**Q: 5 stream truyền tổng 100 MB trong 10s?** 80 Mbps nếu MB thập phân, không chia cho 50s.
+
+**Q: Tại sao kết quả đo không bằng tốc độ gói mạng?** Radio, congestion, TCP ramp-up, endpoint capacity, protocol overhead, VPN route và sampling.
+
+**Bài tập:** Tạo state reducer và mock delegate, test 10 MB/2s, samples unequal duration, cancel và path change.
